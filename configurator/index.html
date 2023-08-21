@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <base href="/" />
+        <title>Configurator example</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script type="module" src="cm-configurator.js"></script>
+        <style>
+            .parameter-section {
+                display: flex;
+                gap: 5px;
+            }
+            .parameter-label {
+                width: 40px;
+            }
+            .parameter-input {
+                width: 100px;
+            }
+        </style>
+        <script type="module">
+            import {CmConfigurator} from "./cm-configurator.js"
+            const configuratorUrlString = "https://configurator.colormass.com/"
+
+            let cmConfiguratorIframe = document.getElementById("cmConfigurator")
+            loadConfigurator(955)
+
+            let cmConfigurator
+            let parameterList
+            let selectedParameterId, selectedParameterType, selectedParameterValue
+            let parameterSelectElement, parameterInputElement, parameterTypeInputElement, parameterValueSelectElement, parameterValueInputElement
+
+            window.onload = () => {
+                cmConfigurator = new CmConfigurator("cmConfigurator")
+
+                cmConfigurator.element.addEventListener("loadingCompleted", (event) => {
+                    console.log("Loading completed.")
+                    initParameters()
+                })
+
+                // Initialize UI elements
+
+                document.getElementById("loadScene").addEventListener("click", loadScene)
+                document.getElementById("updateParams").addEventListener("click", updateParams)
+
+                parameterSelectElement = document.getElementById("parameterSelect")
+                parameterSelectElement.addEventListener("change", parameterChange)
+                parameterInputElement = document.getElementById("parameterInput")
+
+                parameterTypeInputElement = document.getElementById("parameterTypeInput")
+                parameterTypeInputElement.addEventListener("change", parameterTypeChange)
+
+                parameterValueSelectElement = document.getElementById("parameterValueSelect")
+                parameterValueSelectElement.addEventListener("change", parameterValueChange)
+
+                parameterValueInputElement = document.getElementById("parameterValueInput")
+                parameterValueInputElement.addEventListener("change", parameterValueChange)
+
+                document.getElementById("saveSnapshotButton").addEventListener("click", () => cmConfigurator.saveSnapshot())
+            }
+
+            function loadConfigurator(sceneId) {
+                const configuratorUrl = new URL(configuratorUrlString)
+                configuratorUrl.searchParams.append("apiVersion", "2")
+                configuratorUrl.searchParams.append("sceneId", sceneId)
+                cmConfiguratorIframe.src = configuratorUrl
+            }
+
+            function loadScene() {
+                clearParameters()
+                const sceneId = parseInt(document.getElementById("sceneId").value)
+                if (isNaN(sceneId)) {
+                    console.error("Scene id must be an integer.")
+                    return
+                }
+                cmConfigurator.setSceneId(sceneId)
+            }
+
+            async function initParameters() {
+                cmConfigurator.showUi(true)
+                parameterList = await cmConfigurator.getParameterList()
+                for (let i = 0; i < parameterList.length; i++) {
+                    const param = parameterList[i]
+                    parameterSelectElement.options[parameterSelectElement.options.length] = new Option(param.name, param.id)
+                }
+                parameterSelectElement.disabled = false
+                parameterSelectElement.dispatchEvent(new Event("change"))
+
+                console.log("Available parameters:", parameterList)
+            }
+
+            function parameterChange(event) {
+                selectedParameterId = event.target.value
+                parameterInputElement.value = selectedParameterId
+                const parameter = parameterList.find((param) => param.id === selectedParameterId)
+
+                selectedParameterType = parameter.type
+                parameterTypeInputElement.value = selectedParameterType
+
+                const parameterValues = parameter.values
+                if (parameter.values == undefined) {
+                    parameterValueSelectElement.disabled = true
+                    parameterValueInputElement.value = ""
+                } else {
+                    for (let i = 0; i < parameterValues.length; i++) {
+                        const param = parameterValues[i]
+                        parameterValueSelectElement.options[parameterValueSelectElement.options.length] = new Option(param.name, param.id)
+                    }
+                    parameterValueSelectElement.disabled = false
+                    parameterValueSelectElement.dispatchEvent(new Event("change"))
+                }
+            }
+
+            function parameterTypeChange(event) {
+                selectedParameterType = event.target.value
+            }
+
+            function parameterValueChange(event) {
+                selectedParameterValue = event.target.value
+                parameterInputElement.value = selectedParameterId
+                parameterTypeInputElement.value = selectedParameterType
+                parameterValueInputElement.value = selectedParameterValue
+            }
+
+            async function updateParams() {
+                console.log("Setting parameter:", {id: selectedParameterId, type: selectedParameterType, value: selectedParameterValue})
+                await cmConfigurator.setParameter(selectedParameterId, selectedParameterType, selectedParameterValue)
+                console.log("Setting parameter completed.")
+            }
+
+            function clearParameters() {
+                while (parameterSelectElement.options.length > 0) {
+                    parameterSelectElement.remove(0)
+                }
+                while (parameterValueSelectElement.options.length > 0) {
+                    parameterValueSelectElement.remove(0)
+                }
+                parameterInputElement.value = ""
+                parameterTypeInputElement.value = ""
+                parameterValueInputElement.value = ""
+            }
+        </script>
+    </head>
+    <body style="margin: 0">
+        <div>
+            <iframe id="cmConfigurator" style="position: absolute; width: 100%; height: 100%; border: none" allowfullscreen></iframe>
+            <div style="display: flex; flex-direction: column; width: 260px; gap: 5px; position: absolute; top: 0; padding: 10px">
+                <input type="text" id="sceneId" placeholder="Scene ID" />
+                <button id="loadScene">Load scene</button>
+                <br />
+
+                <!-- Parameter -->
+                <div class="parameter-section">
+                    <label for="parameterInput" class="parameter-label">ID: </label>
+                    <input type="text" id="parameterInput" class="parameter-input" />
+                    <select id="parameterSelect" class="parameter-input" disabled></select>
+                </div>
+
+                <!-- Parameter type -->
+                <div class="parameter-section">
+                    <label for="parameterTypeInput" class="parameter-label">Type: </label>
+                    <input type="text" id="parameterTypeInput" class="parameter-input" />
+                </div>
+
+                <!-- Parameter value -->
+                <div class="parameter-section">
+                    <label for="parameterValueInput" class="parameter-label">Value: </label>
+                    <input type="text" id="parameterValueInput" class="parameter-input" />
+                    <select id="parameterValueSelect" class="parameter-input" disabled></select>
+                </div>
+
+                <button id="updateParams">Update params</button>
+                <br />
+
+                <button id="saveSnapshotButton">Save snapshot</button>
+            </div>
+        </div>
+    </body>
+</html>
