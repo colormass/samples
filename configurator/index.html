@@ -29,6 +29,7 @@
             let parameterList
             let selectedParameterId, selectedParameterType, selectedParameterValue
             let parameterSelectElement, parameterInputElement, parameterTypeInputElement, parameterValueSelectElement, parameterValueInputElement
+            let zoomInElement, zoomOutElement, resetCameraElement
 
             window.onload = () => {
                 cmConfigurator = new CmConfigurator("cmConfigurator")
@@ -55,6 +56,15 @@
 
                 parameterValueInputElement = document.getElementById("parameterValueInput")
                 parameterValueInputElement.addEventListener("change", parameterValueChange)
+
+                zoomInElement = document.getElementById("zoomIn")
+                zoomInElement.addEventListener("click", () => zoomIn(0.1))
+
+                zoomOutElement = document.getElementById("zoomOut")
+                zoomOutElement.addEventListener("click", () => zoomOut(0.1))
+
+                resetCameraElement = document.getElementById("resetCamera")
+                resetCameraElement.addEventListener("click", resetCamera)
 
                 document.getElementById("saveSnapshotButton").addEventListener("click", () => cmConfigurator.saveSnapshot())
             }
@@ -139,6 +149,19 @@
                 parameterTypeInputElement.value = ""
                 parameterValueInputElement.value = ""
             }
+
+            function zoomIn(value) {
+                cmConfigurator.zoomIn(value)
+            }
+
+            function zoomOut(value) {
+                cmConfigurator.zoomOut(value)
+            }
+
+            function resetCamera() {
+                cmConfigurator.resetCamera()
+            }
+
         </script>
     </head>
     <body style="margin: 0">
@@ -173,6 +196,11 @@
                 <br />
 
                 <button id="saveSnapshotButton">Save snapshot</button>
+                <br />
+
+                <button id="zoomIn">Zoom in</button>
+                <button id="zoomOut">Zoom out</button>
+                <button id="resetCamera">Reset camera</button>
             </div>
         </div>
     </body>

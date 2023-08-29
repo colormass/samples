@@ -52,6 +52,18 @@ export class CmConfigurator {
         this.sendMessage("showUi", {value: value})
     }
 
+    zoomIn(value) {
+        this.sendMessage("zoomIn", {value: value})
+    }
+
+    zoomOut(value) {
+        this.sendMessage("zoomOut", {value: value})
+    }
+
+    resetCamera() {
+        this.sendMessage("resetCamera")
+    }
+
     /**
      * Event types:
      * - ready
