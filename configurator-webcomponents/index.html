@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tangerine" />
+
+        <!-- Some styles are currently required for the AR dialog to show correctly. This will be dropped soon. -->
+        <link href="https://cm-configurator-wc-prod.web.app/styles.css" rel="stylesheet" />
+
+        <!-- Load the colormass configurator web components -->
+        <script src="https://cm-configurator-wc-prod.web.app/cm-configurator.js" type="module"></script>
+
+        <title>Configurator Web Component Example</title>
+        <meta charset="UTF-8" />
+        <style>
+            :root {
+                --cm-menu-max-num-cols: 8;
+                --cm-menu-icon-size: 40px;
+                --cm-menu-background-color: rgba(255, 255, 255, 0);
+                --cm-menu-font: "Segoe UI Semibold";
+            }
+
+            .container {
+                display: flex;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .menu {
+                width: 15%;
+                background-color: #f4f4f4;
+                overflow: hidden;
+                min-width: 274px;
+            }
+
+            .configurator-container {
+                flex-grow: 1;
+                box-sizing: border-box;
+            }
+
+            .parameter-section {
+                display: flex;
+                gap: 5px;
+            }
+
+            .parameter-label {
+                width: 40px;
+            }
+
+            .parameter-input {
+                width: 100px;
+            }
+
+            .image-container img {
+                max-width: 100px;
+                max-height: 100px;
+                width: auto;
+                height: auto;
+            }
+        </style>
+
+        <script>
+            let cmConfigurator
+            let parameterList
+            let selectedParameterId, selectedParameterType, selectedParameterValue
+            let parameterSelectElement, parameterInputElement, parameterTypeInputElement, parameterValueSelectElement, parameterValueInputElement
+            let zoomInElement, zoomOutElement, resetCameraElement
+
+            window.onload = () => {
+                cmConfigurator = document.querySelector("cm-configurator-main")
+
+                cmConfigurator.addEventListener("loadingCompleted", (event) => {
+                    console.log("Loading completed.")
+                    initParameters()
+                })
+
+                // Initialize UI elements
+                document.getElementById("loadConfigurator").addEventListener("click", loadConfigurator)
+                document.getElementById("updateParams").addEventListener("click", updateParams)
+
+                parameterSelectElement = document.getElementById("parameterSelect")
+                parameterSelectElement.addEventListener("change", parameterChange)
+                parameterInputElement = document.getElementById("parameterInput")
+
+                parameterTypeInputElement = document.getElementById("parameterTypeInput")
+                parameterTypeInputElement.addEventListener("change", parameterTypeChange)
+
+                parameterValueSelectElement = document.getElementById("parameterValueSelect")
+                parameterValueSelectElement.addEventListener("change", parameterValueChange)
+
+                parameterValueInputElement = document.getElementById("parameterValueInput")
+                parameterValueInputElement.addEventListener("change", parameterValueChange)
+
+                zoomInElement = document.getElementById("zoomIn")
+                zoomInElement.addEventListener("click", () => zoomIn(0.9))
+
+                zoomOutElement = document.getElementById("zoomOut")
+                zoomOutElement.addEventListener("click", () => zoomOut(0.9))
+
+                resetCameraElement = document.getElementById("resetCamera")
+                resetCameraElement.addEventListener("click", resetCamera)
+
+                document.getElementById("saveSnapshotButton").addEventListener("click", () => cmConfigurator.saveSnapshot())
+                document.getElementById("inMemorySnapshotButton").addEventListener("click", () => inMemorySnapshot())
+            }
+
+            function loadConfigurator() {
+                clearParameters()
+                const container = document.querySelector(".image-container")
+                container.innerHTML = ""
+                cmConfigurator.loadConfigurator(document.getElementById("templateUuid").value)
+            }
+
+            function inMemorySnapshot() {
+                cmConfigurator
+                    .captureSnapshotInMemory()
+                    .then((snapshot) => {
+                        const img = new Image()
+                        img.src = snapshot
+                        const container = document.querySelector(".image-container")
+                        container.appendChild(img)
+                    })
+                    .catch((error) => {
+                        console.log("Could not capture snapshot in memory.", error)
+                    })
+            }
+
+            async function initParameters() {
+                parameterList = await cmConfigurator.getParameterList()
+                console.log("params", parameterList)
+                for (let i = 0; i < parameterList.length; i++) {
+                    const param = parameterList[i]
+                    parameterSelectElement.options[parameterSelectElement.options.length] = new Option(param.name, param.id)
+                }
+                parameterSelectElement.disabled = false
+                parameterSelectElement.dispatchEvent(new Event("change"))
+
+                console.log("Available parameters:", parameterList)
+            }
+
+            function parameterChange(event) {
+                selectedParameterId = event.target.value
+                parameterInputElement.value = selectedParameterId
+                const parameter = parameterList.find((param) => param.id === selectedParameterId)
+
+                selectedParameterType = parameter.type
+                parameterTypeInputElement.value = selectedParameterType
+
+                clearParameterValues()
+                const parameterValues = parameter.values
+                if (parameter.values == undefined) {
+                    parameterValueSelectElement.disabled = true
+                    parameterValueInputElement.value = ""
+                } else {
+                    for (let i = 0; i < parameterValues.length; i++) {
+                        const param = parameterValues[i]
+                        parameterValueSelectElement.options[parameterValueSelectElement.options.length] = new Option(param.name, param.id)
+                    }
+                    parameterValueSelectElement.disabled = false
+                    parameterValueSelectElement.dispatchEvent(new Event("change"))
+                }
+            }
+
+            function parameterTypeChange(event) {
+                selectedParameterType = event.target.value
+            }
+
+            function parameterValueChange(event) {
+                selectedParameterValue = event.target.value
+                parameterInputElement.value = selectedParameterId
+                parameterTypeInputElement.value = selectedParameterType
+                parameterValueInputElement.value = selectedParameterValue
+            }
+
+            async function updateParams() {
+                console.log("Setting parameter:", {
+                    id: selectedParameterId,
+                    type: selectedParameterType,
+                    value: selectedParameterValue,
+                })
+                await cmConfigurator.setParameter(selectedParameterId, selectedParameterType, selectedParameterValue)
+                console.log("Setting parameter completed.")
+            }
+
+            function clearParameterValues() {
+                while (parameterValueSelectElement.options.length > 0) {
+                    parameterValueSelectElement.remove(0)
+                }
+            }
+
+            function clearParameters() {
+                while (parameterSelectElement.options.length > 0) {
+                    parameterSelectElement.remove(0)
+                }
+                parameterInputElement.value = ""
+                parameterTypeInputElement.value = ""
+                parameterValueInputElement.value = ""
+
+                clearParameterValues()
+            }
+
+            function zoomIn(value) {
+                cmConfigurator.zoomIn(value)
+            }
+
+            function zoomOut(value) {
+                cmConfigurator.zoomOut(value)
+            }
+
+            function resetCamera() {
+                cmConfigurator.resetCamera()
+            }
+        </script>
+    </head>
+    <body style="width: 100%; height: 100%; margin: 0">
+        <div class="container">
+            <div class="menu" style="display: flex; flex-direction: column; align-items: flex-start">
+                <!-- Inserted Controls -->
+                <div style="display: flex; flex-direction: column; width: 260px; gap: 5px; padding: 10px">
+                    <input type="text" id="templateUuid" placeholder="UUID" />
+                    <button id="loadConfigurator">Load configurator</button>
+                    <br />
+
+                    <!-- Parameter -->
+                    <div class="parameter-section">
+                        <label for="parameterInput" class="parameter-label">ID: </label>
+                        <input type="text" id="parameterInput" class="parameter-input" />
+                        <select id="parameterSelect" class="parameter-input" disabled></select>
+                    </div>
+
+                    <!-- Parameter type -->
+                    <div class="parameter-section">
+                        <label for="parameterTypeInput" class="parameter-label">Type: </label>
+                        <input type="text" id="parameterTypeInput" class="parameter-input" />
+                    </div>
+
+                    <!-- Parameter value -->
+                    <div class="parameter-section">
+                        <label for="parameterValueInput" class="parameter-label">Value: </label>
+                        <input type="text" id="parameterValueInput" class="parameter-input" />
+                        <select id="parameterValueSelect" class="parameter-input" disabled></select>
+                    </div>
+
+                    <button id="updateParams">Update params</button>
+                    <br />
+
+                    <button id="saveSnapshotButton">Save snapshot</button>
+                    <button id="inMemorySnapshotButton">In-memory snapshot</button>
+                    <br />
+
+                    <button id="zoomIn">Zoom in</button>
+                    <button id="zoomOut">Zoom out</button>
+                    <button id="resetCamera">Reset camera</button>
+                </div>
+                <!-- End of Inserted Controls -->
+                <div style="margin-top: 50px"></div>
+                <cm-configurator-menu></cm-configurator-menu>
+                <div class="image-container"></div>
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main template-uuid="8ee95263-fd7c-40fc-b99f-08961594e14e" use-external-menu="true"></cm-configurator-main>
+            </div>
+        </div>
+    </body>
+</html>
