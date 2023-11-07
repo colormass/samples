@@ -107,6 +107,7 @@
                 selectedParameterType = parameter.type
                 parameterTypeInputElement.value = selectedParameterType
 
+                clearParameterValues()
                 const parameterValues = parameter.values
                 if (parameter.values == undefined) {
                     parameterValueSelectElement.disabled = true
@@ -138,16 +139,21 @@
                 console.log("Setting parameter completed.")
             }
 
+            function clearParameterValues() {
+                while (parameterValueSelectElement.options.length > 0) {
+                    parameterValueSelectElement.remove(0)
+                }
+            }
+
             function clearParameters() {
                 while (parameterSelectElement.options.length > 0) {
                     parameterSelectElement.remove(0)
                 }
-                while (parameterValueSelectElement.options.length > 0) {
-                    parameterValueSelectElement.remove(0)
-                }
                 parameterInputElement.value = ""
                 parameterTypeInputElement.value = ""
                 parameterValueInputElement.value = ""
+
+                clearParameterValues()
             }
 
             function zoomIn(value) {
