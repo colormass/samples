@@ -75,6 +75,9 @@
                     initParameters()
                 })
 
+                cmConfigurator.addEventListener("configurationLoaded", (event) => {
+                    console.log("prices: ", cmConfigurator.getPricesAsList())
+                })
                 // Initialize UI elements
                 document.getElementById("loadConfigurator").addEventListener("click", loadConfigurator)
                 document.getElementById("updateParams").addEventListener("click", updateParams)

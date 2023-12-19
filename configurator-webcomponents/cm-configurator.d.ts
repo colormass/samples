@@ -7,6 +7,7 @@ export interface CMConfiguratorElement extends HTMLElement {
     zoomIn(factor: number): void
     zoomOut(factor: number): void
     resetCamera(): void
+    getPricesAsList(): PricedItem[]
 
     addEventListener(type: "loadingCompleted", listener: (this: this, ev: Event) => any): void
     addEventListener(type: "changeCompleted", listener: (this: this, ev: CustomEvent<{id: string; value: string; type: string}>) => any): void
@@ -29,4 +30,10 @@ export type ParameterInfo = {
         name: string
     }[]
     value?: any
+}
+
+export type PricedItem = {
+    description: string
+    sku?: string
+    price: number
 }
