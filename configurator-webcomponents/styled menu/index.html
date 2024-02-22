@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
+
+        <!-- Load the colormass configurator web components -->
+        <script src="https://cm-configurator-wc-prod.web.app/cm-configurator.js" type="module"></script>
+
+        <title>Configurator Web Component Example</title>
+        <meta charset="UTF-8" />
+        <style>
+            :root {
+                /* Available css variables */
+                --cm-menu-max-num-cols: 8;
+                --cm-menu-icon-size: 50px;
+                --cm-menu-background-color: rgba(255, 255, 255, 0);
+                --cm-tooltip-font-size: 14px;
+                --cm-tooltip-background-color: gray;
+                font-family: "Roboto";
+            }
+
+            .container {
+                display: flex;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .menu {
+                justify-content: center;
+                width: 15%;
+                background-color: #f4f4f4;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                min-width: 400px;
+                --color: #d78a5e;
+
+                /* The web components use the shadow dom and cannot be accessed directly. The menu currently exposes
+                three parts to style: cm-config-group-title, cm-icons-container and cm-icon-container.
+                See part="..." in the browser devtools. */
+                ::part(cm-config-group-title) {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: rgba(0, 140, 153, 0);
+                    background-color: var(--color);
+                    padding: 10px;
+                    color: white;
+                    font-size: 16px;
+                }
+
+                ::part(cm-config-group-title):hover {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: var(--color);
+                    background-color: rgba(255, 255, 255, 1);
+                    color: var(--color);
+                    cursor: pointer;
+                }
+
+                ::part(cm-icons-container) {
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                }
+
+                ::part(cm-icon-container) {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: rgba(0, 140, 153, 0);
+                }
+
+                ::part(cm-icon-container):hover {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: var(--color);
+                }
+            }
+
+            .configurator-container {
+                flex-grow: 1;
+                box-sizing: border-box;
+            }
+        </style>
+    </head>
+    <body style="width: 100%; height: 100%; margin: 0">
+        <div class="container">
+            <div class="menu">
+                <!-- Override the default settings for the menu appearance with "accordion"  -->
+                <cm-configurator-menu ui-style-override="accordion" style="width: 100%"></cm-configurator-menu>
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main template-uuid="22fee4a0-dc34-40c3-a2d3-290126fb8111" use-external-menu="true"></cm-configurator-main>
+            </div>
+        </div>
+    </body>
+</html>

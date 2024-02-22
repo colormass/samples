@@ -7,7 +7,7 @@ export interface CMConfiguratorElement extends HTMLElement {
     zoomIn(factor: number): void
     zoomOut(factor: number): void
     resetCamera(): void
-    getPricesAsList(): PricedItem[]
+    getPricesAsList(): Promise<PricedItem[]>
 
     addEventListener(type: "loadingCompleted", listener: (this: this, ev: Event) => any): void
     addEventListener(type: "changeCompleted", listener: (this: this, ev: CustomEvent<{id: string; value: string; type: string}>) => any): void
@@ -17,6 +17,9 @@ export interface CMConfiguratorElement extends HTMLElement {
 
     //Also available as html attribute use-external-menu, usable as <cm-configurator-main use-external-menu="true"></cm-configurator-main>. Must be set if the external menu is used.
     useExternalMenu: string
+
+    //Also available as html attribute ui-style-override, usable as <cm-configurator-main ui-style-overrides="accordion"></cm-configurator-main>.
+    uiStyleOverride: string
 }
 
 export type ParamType = "config" | "material" | "material-article-id" | "template" | "image" | "string" | "boolean" | "number" | "object"

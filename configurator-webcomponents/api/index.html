@@ -3,10 +3,7 @@
     <head>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tangerine" />
-
-        <!-- Some styles are currently required for the AR dialog to show correctly. This will be dropped soon. -->
-        <link href="https://cm-configurator-wc-prod.web.app/styles.css" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
 
         <!-- Load the colormass configurator web components -->
         <script src="https://cm-configurator-wc-prod.web.app/cm-configurator.js" type="module"></script>
@@ -18,7 +15,7 @@
                 --cm-menu-max-num-cols: 8;
                 --cm-menu-icon-size: 40px;
                 --cm-menu-background-color: rgba(255, 255, 255, 0);
-                --cm-menu-font: "Segoe UI Semibold";
+                font-family: "Roboto";
             }
 
             .container {
@@ -75,9 +72,10 @@
                     initParameters()
                 })
 
-                cmConfigurator.addEventListener("configurationLoaded", (event) => {
-                    console.log("prices: ", cmConfigurator.getPricesAsList())
+                cmConfigurator.addEventListener("configurationLoaded", async (event) => {
+                    console.log("prices: ", await cmConfigurator.getPricesAsList())
                 })
+
                 // Initialize UI elements
                 document.getElementById("loadConfigurator").addEventListener("click", loadConfigurator)
                 document.getElementById("updateParams").addEventListener("click", updateParams)
@@ -262,7 +260,7 @@
                 <div class="image-container"></div>
             </div>
             <div class="configurator-container">
-                <cm-configurator-main template-uuid="8ee95263-fd7c-40fc-b99f-08961594e14e" use-external-menu="true"></cm-configurator-main>
+                <cm-configurator-main ui-style="default" template-uuid="8ee95263-fd7c-40fc-b99f-08961594e14e" use-external-menu="true"></cm-configurator-main>
             </div>
         </div>
     </body>
