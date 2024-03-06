@@ -76,6 +76,15 @@
                     border-style: solid;
                     border-color: var(--color);
                 }
+
+                ::part(cm-icon-with-caption) {
+                    gap: 8px;
+                    font-size: 10px;
+                }
+
+                ::part(cm-config-menu-icons) {
+                    gap: 10px;
+                }
             }
 
             .configurator-container {
@@ -88,7 +97,7 @@
         <div class="container">
             <div class="menu">
                 <!-- Override the default settings for the menu appearance with "accordion"  -->
-                <cm-configurator-menu ui-style-override="accordion" style="width: 100%"></cm-configurator-menu>
+                <cm-configurator-menu ui-style-override="accordion" use-captions="true" style="width: 100%"></cm-configurator-menu>
             </div>
             <div class="configurator-container">
                 <cm-configurator-main template-uuid="22fee4a0-dc34-40c3-a2d3-290126fb8111" use-external-menu="true"></cm-configurator-main>
