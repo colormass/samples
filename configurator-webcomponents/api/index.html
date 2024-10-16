@@ -6,7 +6,7 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
 
         <!-- Load the colormass configurator web components -->
-        <script src="https://cm-configurator-wc-prod.web.app/cm-configurator.js" type="module"></script>
+        <script src="https://cwc.colormass.com/cm-configurator.js" type="module"></script>
 
         <title>Configurator Web Component Example</title>
         <meta charset="UTF-8" />
@@ -64,7 +64,7 @@
             let parameterSelectElement, parameterInputElement, parameterTypeInputElement, parameterValueSelectElement, parameterValueInputElement
             let zoomInElement, zoomOutElement, resetCameraElement
 
-            window.onload = () => {
+            customElements.whenDefined("cm-configurator-main").then(() => {
                 cmConfigurator = document.querySelector("cm-configurator-main")
 
                 cmConfigurator.addEventListener("loadingCompleted", (event) => {
@@ -104,7 +104,7 @@
 
                 document.getElementById("saveSnapshotButton").addEventListener("click", () => cmConfigurator.saveSnapshot())
                 document.getElementById("inMemorySnapshotButton").addEventListener("click", () => inMemorySnapshot())
-            }
+            })
 
             function loadConfigurator() {
                 clearParameters()
