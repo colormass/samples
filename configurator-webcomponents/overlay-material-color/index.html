@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
+
+        <!-- Load the colormass configurator web components -->
+        <script src="https://cwc.colormass.com/cm-configurator.js" type="module"></script>
+
+        <title>Overlay Material Color | Example</title>
+        <meta charset="UTF-8" />
+        <style>
+            body {
+                width: 100%; 
+                height: 100%; 
+                margin: 0
+            }
+
+            :root {
+                --cm-menu-max-num-cols: 8;
+                --cm-menu-icon-size: 40px;
+                --cm-menu-background-color: rgba(255, 255, 255, 0);
+                font-family: "Roboto";
+            }
+
+            .container {
+                display: flex;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .menu {
+                display: flex; 
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px; 
+                padding: 20px;
+                width: 300px; 
+                background-color: #f4f4f4;
+                overflow: hidden;
+            }
+
+            .menu-item {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 10px;
+                width: 100%;
+            }
+
+            #overlayImageInput {
+                display: none;
+            }
+
+            .configurator-container {
+                flex-grow: 1;
+                box-sizing: border-box;
+            }
+
+            img {
+                width: 100%;
+                height: auto;
+            }
+        </style>
+
+        <script>
+            let cmConfigurator,
+                overlayImageInput,
+                widthInput,
+                heightInput,
+                overlayImagePreview, 
+                snapshotImagePreview;
+            
+            customElements.whenDefined("cm-configurator-main").then(() => {
+                cmConfigurator = document.querySelector("cm-configurator-main")
+
+                // Initialize UI elements
+                overlayImageInput = document.getElementById("overlayImageInput")
+                widthInput = document.getElementById("widthInput")
+                heightInput = document.getElementById("heightInput")
+                overlayImagePreview = document.getElementById("overlay-image-preview")
+                snapshotImagePreview = document.getElementById("snapshot-image-preview")
+
+                // Reset inputs
+                overlayImageInput.value = ""
+                widthInput.value = 10
+                heightInput.value = 10
+            })
+
+            function inMemorySnapshot() {
+                cmConfigurator
+                    .captureSnapshotInMemory()
+                    .then((snapshot) => {
+                        snapshotImagePreview.src = snapshot
+                    })
+                    .catch((error) => {
+                        console.log("Could not capture snapshot in memory.", error)
+                    })
+            }
+
+            async function updateWidth(width) {
+                await cmConfigurator.setParameter("width", "number", Number(width))
+            }
+
+            async function updateHeight(height) {
+                await cmConfigurator.setParameter("height", "number", Number(height))
+            }
+
+            async function updateOverlyImage(files) {
+                const file = files[0]
+                
+                // set image preview via data url
+                const dataUrlReader = new FileReader()
+                dataUrlReader.onload = async function(e) {
+                    overlayImagePreview.src = e.target.result
+                }
+                dataUrlReader.readAsDataURL(files[0])
+
+                // set image data as parameter
+                const byteLoader = new FileReader()
+                byteLoader.onload = async function(e) {
+                    const buffer = new Uint8Array(e.target.result);
+                    const imageParamData = {
+                        id: crypto.randomUUID(),
+                        contentType: file.type,
+                        data: buffer,
+                    }
+                    await cmConfigurator.setParameter("overlayImage", "image", imageParamData)
+                }
+                byteLoader.readAsArrayBuffer(files[0])
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="menu">
+                <!-- Pattern width -->
+                <div class="menu-item">
+                    <label for="widthInput">Width: </label>
+                    <input id="widthInput" type="number" value="10" onchange="updateWidth(this.value)"/>
+                </div>
+
+                <!-- Pattern height -->
+                <div class="menu-item">
+                    <label for="heightInput">Height: </label>
+                    <input id="heightInput" type="number" value="10" onchange="updateHeight(this.value)"/>
+                </div>
+
+                <!-- Overlay image -->
+                <div class="menu-item">
+                    <label for="overlayImageInput">Overlay image</label>
+                    <button onclick="overlayImageInput.click()">Select Image</button>
+                    <input type="file" id="overlayImageInput" accept="image/jpeg, image/png" onchange="updateOverlyImage(this.files)" />
+                </div>
+                <img id="overlay-image-preview" />                    
+
+                <!-- Take in memory snapshot -->
+                 <div class="menu-item">
+                    <button onclick="inMemorySnapshot()">Take a snapshot</button>
+                 </div>
+                 <img id="snapshot-image-preview" /> 
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main ui-style="default" template-uuid="60ec3a3a-9e92-4d2a-a6e5-16595d34686e"></cm-configurator-main>
+            </div>
+        </div>
+    </body>
+</html>
