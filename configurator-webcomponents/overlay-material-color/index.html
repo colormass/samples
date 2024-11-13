@@ -107,7 +107,7 @@
                 await cmConfigurator.setParameter("height", "number", Number(height))
             }
 
-            async function updateOverlyImage(files) {
+            async function updateOverlayImage(files) {
                 const file = files[0]
                 
                 // set image preview via data url
@@ -151,7 +151,7 @@
                 <div class="menu-item">
                     <label for="overlayImageInput">Overlay image</label>
                     <button onclick="overlayImageInput.click()">Select Image</button>
-                    <input type="file" id="overlayImageInput" accept="image/jpeg, image/png" onchange="updateOverlyImage(this.files)" />
+                    <input type="file" id="overlayImageInput" accept="image/jpeg, image/png" onchange="updateOverlayImage(this.files)" />
                 </div>
                 <img id="overlay-image-preview" />                    
 
