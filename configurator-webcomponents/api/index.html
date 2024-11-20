@@ -72,6 +72,11 @@
                     initParameters()
                 })
 
+                cmConfigurator.addEventListener("arUrl", (event) => {
+                    console.log("Received ar url: ", event.detail)
+                    displayQrCode(event.detail)
+                })
+
                 cmConfigurator.addEventListener("configurationLoaded", async (event) => {
                     console.log("prices: ", await cmConfigurator.getPricesAsList())
                 })
@@ -111,6 +116,20 @@
                 const container = document.querySelector(".image-container")
                 container.innerHTML = ""
                 cmConfigurator.loadConfigurator(document.getElementById("templateUuid").value)
+            }
+
+            function displayQrCode(url) {
+                cmConfigurator
+                    .generateQrCode(url, "low", 200, 0)
+                    .then((qrImage) => {
+                        const img = new Image()
+                        img.src = qrImage
+                        const container = document.querySelector(".image-container")
+                        container.appendChild(img)
+                    })
+                    .catch((error) => {
+                        console.log("Could not capture snapshot in memory.", error)
+                    })
             }
 
             function inMemorySnapshot() {
