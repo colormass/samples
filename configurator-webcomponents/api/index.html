@@ -55,6 +55,11 @@
                             <button id="resetCamera">Reset camera</button>
                         </div>
                     </div>
+                    <div class="menu-section">
+                        <div class="button-group">
+                            <button id="viewInArButton">View in AR</button>
+                        </div>
+                    </div>
                 </div>
                 <cm-configurator-menu></cm-configurator-menu>
                 <div class="image-container"></div>
@@ -83,6 +88,7 @@
                 document.getElementById("resetCamera").addEventListener("click", resetCamera)
                 document.getElementById("saveSnapshotButton").addEventListener("click", () => cmConfigurator.saveSnapshot())
                 document.getElementById("inMemorySnapshotButton").addEventListener("click", inMemorySnapshot)
+                document.getElementById("viewInArButton").addEventListener("click", () => cmConfigurator.viewInAr())
             })
 
             async function loadConfigurator() {
