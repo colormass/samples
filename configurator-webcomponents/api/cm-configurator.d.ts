@@ -8,9 +8,13 @@ export interface CMConfiguratorElement extends HTMLElement {
     zoomOut(factor: number): void
     resetCamera(): void
     getPricesAsList(): Promise<PricedItem[]>
+    viewInAr(): void
+    generateQrCode(url: string, errorCorrectionLevel: "high" | "low", width: number, margin: number): Promise<string>
 
-    addEventListener(type: "loadingCompleted", listener: (this: this, ev: Event) => any): void
-    addEventListener(type: "changeCompleted", listener: (this: this, ev: CustomEvent<{id: string; value: string; type: string}>) => any): void
+    addEventListener(type: "loadingCompleted", listener: (this: this, ev: Event) => void): void
+    addEventListener(type: "configurationLoaded", listener: (this: this, ev: Event) => void): void
+    addEventListener(type: "changeCompleted", listener: (this: this, ev: CustomEvent<{id: string; value: string; type: string}>) => void): void
+    addEventListener(type: "arUrl", listener: (this: this, ev: CustomEvent<string>) => void): void
 
     //Also available as html attribute template-uuid, usable as <cm-configurator-main template-uuid="123"></cm-configurator-main> to load a scene on startup.
     templateUuid: number
@@ -18,7 +22,7 @@ export interface CMConfiguratorElement extends HTMLElement {
     //Also available as html attribute use-external-menu, usable as <cm-configurator-main use-external-menu="true"></cm-configurator-main>. Must be set if the external menu is used.
     useExternalMenu: string
 
-    //Also available as html attribute ui-style-override, usable as <cm-configurator-main ui-style-overrides="accordion"></cm-configurator-main>.
+    //Also available as html attribute ui-style-override, usable as <cm-configurator-main ui-style-override="accordion"></cm-configurator-main>.
     uiStyleOverride: string
 }
 
