@@ -173,7 +173,11 @@
             }
 
             async function updateParams() {
-                console.log("Setting parameter:", {id: selectedParameterId, type: selectedParameterType, value: selectedParameterValue})
+                console.log("Setting parameter:", {
+                    id: selectedParameterId,
+                    type: selectedParameterType,
+                    value: selectedParameterValue,
+                })
                 await cmConfigurator.setParameter(selectedParameterId, selectedParameterType, selectedParameterValue)
                 console.log("Setting parameter completed.")
             }

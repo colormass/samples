@@ -12,9 +12,9 @@
         <meta charset="UTF-8" />
         <style>
             body {
-                width: 100%; 
-                height: 100%; 
-                margin: 0
+                width: 100%;
+                height: 100%;
+                margin: 0;
             }
 
             :root {
@@ -31,12 +31,12 @@
             }
 
             .menu {
-                display: flex; 
+                display: flex;
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px; 
+                gap: 10px;
                 padding: 20px;
-                width: 300px; 
+                width: 300px;
                 background-color: #f4f4f4;
                 overflow: hidden;
             }
@@ -65,13 +65,8 @@
         </style>
 
         <script>
-            let cmConfigurator,
-                overlayImageInput,
-                widthInput,
-                heightInput,
-                overlayImagePreview, 
-                snapshotImagePreview;
-            
+            let cmConfigurator, overlayImageInput, widthInput, heightInput, overlayImagePreview, snapshotImagePreview
+
             customElements.whenDefined("cm-configurator-main").then(() => {
                 cmConfigurator = document.querySelector("cm-configurator-main")
 
@@ -109,18 +104,18 @@
 
             async function updateOverlayImage(files) {
                 const file = files[0]
-                
+
                 // set image preview via data url
                 const dataUrlReader = new FileReader()
-                dataUrlReader.onload = async function(e) {
+                dataUrlReader.onload = async function (e) {
                     overlayImagePreview.src = e.target.result
                 }
                 dataUrlReader.readAsDataURL(files[0])
 
                 // set image data as parameter
                 const byteLoader = new FileReader()
-                byteLoader.onload = async function(e) {
-                    const buffer = new Uint8Array(e.target.result);
+                byteLoader.onload = async function (e) {
+                    const buffer = new Uint8Array(e.target.result)
                     const imageParamData = {
                         id: crypto.randomUUID(),
                         contentType: file.type,
@@ -138,13 +133,13 @@
                 <!-- Pattern width -->
                 <div class="menu-item">
                     <label for="widthInput">Width: </label>
-                    <input id="widthInput" type="number" value="10" onchange="updateWidth(this.value)"/>
+                    <input id="widthInput" type="number" value="10" onchange="updateWidth(this.value)" />
                 </div>
 
                 <!-- Pattern height -->
                 <div class="menu-item">
                     <label for="heightInput">Height: </label>
-                    <input id="heightInput" type="number" value="10" onchange="updateHeight(this.value)"/>
+                    <input id="heightInput" type="number" value="10" onchange="updateHeight(this.value)" />
                 </div>
 
                 <!-- Overlay image -->
@@ -153,13 +148,13 @@
                     <button onclick="overlayImageInput.click()">Select Image</button>
                     <input type="file" id="overlayImageInput" accept="image/jpeg, image/png" onchange="updateOverlayImage(this.files)" />
                 </div>
-                <img id="overlay-image-preview" />                    
+                <img id="overlay-image-preview" />
 
                 <!-- Take in memory snapshot -->
-                 <div class="menu-item">
+                <div class="menu-item">
                     <button onclick="inMemorySnapshot()">Take a snapshot</button>
-                 </div>
-                 <img id="snapshot-image-preview" /> 
+                </div>
+                <img id="snapshot-image-preview" />
             </div>
             <div class="configurator-container">
                 <cm-configurator-main ui-style="default" template-uuid="60ec3a3a-9e92-4d2a-a6e5-16595d34686e"></cm-configurator-main>
