@@ -105,25 +105,35 @@
             async function updateOverlayImage(files) {
                 const file = files[0]
 
-                // set image preview via data url
-                const dataUrlReader = new FileReader()
-                dataUrlReader.onload = async function (e) {
-                    overlayImagePreview.src = e.target.result
-                }
-                dataUrlReader.readAsDataURL(files[0])
+                const image = await fetch(file)
+                const imageBlob = await image.blob()
+                const imageUrl = URL.createObjectURL(imageBlob)
 
-                // set image data as parameter
-                const byteLoader = new FileReader()
-                byteLoader.onload = async function (e) {
-                    const buffer = new Uint8Array(e.target.result)
-                    const imageParamData = {
-                        id: crypto.randomUUID(),
-                        contentType: file.type,
-                        data: buffer,
-                    }
-                    await cmConfigurator.setParameter("overlayImage", "image", imageParamData)
-                }
-                byteLoader.readAsArrayBuffer(files[0])
+                // update image parameter
+                await cmConfigurator.setParameter("overlayImage", "image", imageUrl)
+
+                // set image preview
+                overlayImagePreview.src = imageUrl
+
+                // Alternative implementation using data URL
+                // const dataUrlReader = new FileReader()
+                // dataUrlReader.onload = async function (e) {
+                //     overlayImagePreview.src = e.target.result
+                //     await cmConfigurator.setParameter("overlayImage", "image", e.target.result)
+                // }
+                // dataUrlReader.readAsDataURL(files[0])
+            
+                // Alternative implementation using array buffer
+                // const byteLoader = new FileReader()
+                // byteLoader.onload = async function (e) {
+                //     const buffer = new Uint8Array(e.target.result)
+                //     const imageParamData = {
+                //         contentType: file.type,
+                //         data: buffer,
+                //     }
+                //     await cmConfigurator.setParameter("overlayImage", "image", imageParamData)
+                // }
+                // byteLoader.readAsArrayBuffer(files[0])
             }
         </script>
     </head>
