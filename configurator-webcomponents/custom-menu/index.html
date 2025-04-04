@@ -8,58 +8,10 @@
         <!-- Load the colormass configurator web components -->
         <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
 
+        <link rel="stylesheet" href="../api/styles.css" />
+
         <title>Custom Menu | Example</title>
         <meta charset="UTF-8" />
-        <style>
-            body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-            }
-
-            :root {
-                --cm-menu-max-num-cols: 8;
-                --cm-menu-icon-size: 40px;
-                --cm-menu-background-color: rgba(255, 255, 255, 0);
-                font-family: "Roboto";
-            }
-
-            .container {
-                display: flex;
-                height: 100%;
-                overflow: hidden;
-            }
-
-            .menu {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-                padding: 20px;
-                width: 300px;
-                background-color: #f4f4f4;
-                overflow: hidden;
-            }
-
-            .menu-parameter-values-container {
-                display: flex;
-                gap: 0.5rem;
-                flex-wrap: wrap;
-            }
-            
-            button.parameter-value {
-                cursor: pointer;
-            }
-
-            button.parameter-value.active {
-                background-color: lightblue;
-            }
-
-            .configurator-container {
-                flex-grow: 1;
-                box-sizing: border-box;
-            }
-        </style>
 
         <script>
             let cmConfigurator, menuContainer, parameterList
@@ -72,24 +24,28 @@
                 cmConfigurator.addEventListener("loadingCompleted", initializeMenu)
                 // Update the menu when available parameter values changed.
                 cmConfigurator.addEventListener("configurationLoaded", initializeMenu);
+                // Update the menu when available parameter values changed.
+                cmConfigurator.addEventListener("changeCompleted", initializeMenu);
             })
 
             async function initializeMenu() {
+                // clear the menu container
+                menuContainer.innerHTML = ""
                 // load all available parameters
                 parameterList = cmConfigurator.getParameterList()
                 for (const parameter of parameterList) {
                     // create a container element for each parameter
                     const parameterContainer = htmlToNode(`
-                        <div class="menu-parameter-container">
+                        <div class="menu-section">
                             <h3>${parameter.name}</h3>
-                            <div class="menu-parameter-values-container"></div>
+                            <div class="parameter-flex" id="menu-parameter-values-container"></div>
                         </div>
                     `)
 
                     for (const parameterValue of parameter.values) {
                         // create a button for each possible parameter value
                         const parameterValueButton = htmlToNode(`
-                            <button class="parameter-value ${parameterValue.id === parameter.value ? 'active' : ''}">
+                            <button class="${parameterValue.id === parameter.value ? 'active' : ''}">
                                 ${parameterValue.name}
                             </button>
                         `)
@@ -97,7 +53,7 @@
                             updateParameterMenuActiveStates(event.currentTarget)
                             await cmConfigurator.setParameter(parameter.id, parameter.parameterType, parameterValue.id)
                         }
-                        parameterContainer.querySelector('.menu-parameter-values-container').appendChild(parameterValueButton)
+                        parameterContainer.querySelector('#menu-parameter-values-container').appendChild(parameterValueButton)
                     }
 
                     menuContainer.appendChild(parameterContainer)
@@ -123,8 +79,10 @@
     </head>
     <body>
         <div class="container">
-            <div class="menu" id="menu-container">
-                <!-- Container holds the dynamically rendered menu elements -->
+            <div class="menu">
+                <div class="menu-controls" id="menu-container">
+                    <!-- Container holds the dynamically rendered menu elements -->
+                </div>
             </div>
             <div class="configurator-container">
                 <cm-configurator-main ui-style="default" template-uuid="fb825772-66cd-4001-ae46-d537f194d6a2" use-external-menu="true"></cm-configurator-main>
