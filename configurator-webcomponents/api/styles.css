@@ -36,6 +36,11 @@ body {
     gap: 0.5rem;
     align-items: center;
 }
+.parameter-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
 .parameter-row {
     display: contents;
 }
@@ -84,6 +89,9 @@ button {
 }
 button:hover {
     background: #ddd;
+}
+button.active {
+    background-color: #40c4ff;
 }
 .image-container {
     padding: var(--menu-padding);
