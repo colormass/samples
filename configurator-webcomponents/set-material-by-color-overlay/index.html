@@ -5,7 +5,7 @@
         <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
 
-        <script src="http://localhost:4300/cm-configurator.js" type="module"></script>
+        <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
         <link rel="stylesheet" href="../api/styles.css" />
 
         <title>Custom Menu | Example</title>
@@ -73,7 +73,7 @@
                 materialInputSelect.innerHTML = ""
                 parameterList.forEach((param) => {
                     //The configurator has multiple input types, we are only interested in the ones for material assignment
-                    if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.id)
+                    if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.name, param.id)
                 })
             }
 

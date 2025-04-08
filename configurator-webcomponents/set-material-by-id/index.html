@@ -61,7 +61,7 @@
                 materialInputSelect.innerHTML = ""
                 parameterList.forEach((param) => {
                     //The configurator has multiple input types, we are only interested in the ones for material assignment
-                    if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.id)
+                    if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.name, param.id)
                 })
             }
 
