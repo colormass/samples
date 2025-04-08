@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
+
+        <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
+        <link rel="stylesheet" href="../api/styles.css" />
+
+        <title>Custom Menu | Example</title>
+        <meta charset="UTF-8" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="menu" id="menu-container">
+                <div class="menu-controls">
+                    <div class="menu-section">
+                        <div class="parameter-grid">
+                            <label class="parameter-label full-width" for="material-input">Material Input:</label>
+                            <select id="material-input" class="parameter-input full-width"></select>
+
+                            <label class="parameter-label full-width" for="material-id">Material Id:</label>
+                            <select id="material-id" class="parameter-input full-width"></select>
+
+                            <button id="assign-material" class="full-width" type="button">Assign Material</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main ui-style="default" template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213" use-external-menu="true"> </cm-configurator-main>
+            </div>
+        </div>
+
+        <script>
+            //The following uuids are material uuids
+            const MATERIAL_IDS = ["f4ad6c8c-0c8c-44dd-9e21-6412ada1a2c9", "9edd086b-b53d-4193-9769-360d01b5507e", "2b69dfc3-a7e8-4fe9-b6a9-c52a3c992545"]
+
+            let cmConfigurator, parameterList
+
+            window.onload = () => {
+                document.getElementById("assign-material").addEventListener("click", assignMaterial)
+            }
+
+            customElements.whenDefined("cm-configurator-main").then(() => {
+                cmConfigurator = document.querySelector("cm-configurator-main")
+                cmConfigurator.addEventListener("loadingCompleted", initializeMenu)
+            })
+
+            async function initializeMenu() {
+                const materialId = document.getElementById("material-id")
+                MATERIAL_IDS.forEach((id) => {
+                    const opt = document.createElement("option")
+                    opt.value = opt.textContent = id
+                    materialId.appendChild(opt)
+                })
+
+                parameterList = await cmConfigurator.getParameterList()
+                const materialInputSelect = document.getElementById("material-input")
+                materialInputSelect.innerHTML = ""
+                parameterList.forEach((param) => {
+                    //The configurator has multiple input types, we are only interested in the ones for material assignment
+                    if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.id)
+                })
+            }
+
+            function assignMaterial() {
+                const input = document.getElementById("material-input").value
+                const id = document.getElementById("material-id").value
+                console.log("Assigning material:", input, id)
+                cmConfigurator.setMaterialById(input, id)
+            }
+        </script>
+    </body>
+</html>
