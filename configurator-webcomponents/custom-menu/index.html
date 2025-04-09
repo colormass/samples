@@ -8,7 +8,8 @@
         <!-- Load the colormass configurator web components -->
         <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
 
-        <link rel="stylesheet" href="../api/styles.css" />
+        <link rel="stylesheet" href="../styles/sample.css" />
+        <link rel="stylesheet" href="../styles/ui.css" />
 
         <title>Custom Menu | Example</title>
         <meta charset="UTF-8" />
@@ -23,9 +24,9 @@
                 // Once the configurator has loaded, the menu can be rendered based on the available parameters
                 cmConfigurator.addEventListener("loadingCompleted", initializeMenu)
                 // Update the menu when available parameter values changed.
-                cmConfigurator.addEventListener("configurationLoaded", initializeMenu);
+                cmConfigurator.addEventListener("configurationLoaded", initializeMenu)
                 // Update the menu when available parameter values changed.
-                cmConfigurator.addEventListener("changeCompleted", initializeMenu);
+                cmConfigurator.addEventListener("changeCompleted", initializeMenu)
             })
 
             async function initializeMenu() {
@@ -45,7 +46,7 @@
                     for (const parameterValue of parameter.values) {
                         // create a button for each possible parameter value
                         const parameterValueButton = htmlToNode(`
-                            <button class="${parameterValue.id === parameter.value ? 'active' : ''}">
+                            <button class="${parameterValue.id === parameter.value ? "active" : ""}">
                                 ${parameterValue.name}
                             </button>
                         `)
@@ -53,7 +54,7 @@
                             updateParameterMenuActiveStates(event.currentTarget)
                             await cmConfigurator.setParameter(parameter.id, parameter.parameterType, parameterValue.id)
                         }
-                        parameterContainer.querySelector('#menu-parameter-values-container').appendChild(parameterValueButton)
+                        parameterContainer.querySelector("#menu-parameter-values-container").appendChild(parameterValueButton)
                     }
 
                     menuContainer.appendChild(parameterContainer)

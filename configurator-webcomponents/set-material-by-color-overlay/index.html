@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
+        <link rel="stylesheet" href="../styles/sample.css" />
+        <link rel="stylesheet" href="../styles/ui.css" />
+
+        <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
+
+        <title>Custom Menu | Example</title>
+        <meta charset="UTF-8" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="menu" id="menu-container">
+                <div class="menu-controls">
+                    <div class="menu-section">
+                        <label class="parameter-label full-width" for="material-input">Material Input:</label>
+                        <select id="material-input" class="parameter-input full-width"></select>
+
+                        <label class="parameter-label full-width" for="material-id">Base Material Id:</label>
+                        <select id="material-id" class="parameter-input full-width"></select>
+                        <label class="parameter-label full-width" for="material-id">Overlay Image Url:</label>
+                        <input
+                            id="overlay-url"
+                            class="parameter-input"
+                            type="text"
+                            placeholder="Image URL"
+                            value="https://storage.googleapis.com/cm-platform-prod-media/7qL3Zr8XmivnHMdp0HNGqqcLdccZtqDLfJrY4FA4ZYW8sDHNm8ctlf8EhbnwqRFF0uWx8kuNsuPPVb5nyFBQagoZ67XRRRB3jbefabKaH1ysg1z0kPDI9mfO5vDXkwHT"
+                        />
+                        <label class="parameter-label full-width" for="material-id">Size:</label>
+                        <div class="dual-input">
+                            <input id="width-input" class="parameter-input" type="number" step="any" placeholder="Width" value="100" />
+                            <input id="height-input" class="parameter-input" type="number" step="any" placeholder="Height" value="100" />
+                        </div>
+                        <button id="assign-material" class="full-width" type="button">Assign Color</button>
+                    </div>
+                </div>
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main ui-style="default" template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213" use-external-menu="true"> </cm-configurator-main>
+            </div>
+        </div>
+
+        <script>
+            //The following uuids are material uuids
+            const MATERIAL_IDS = ["0ec58091-3c99-439c-a5c3-b241e79a941d", "c5f8fd71-86f8-4151-8f00-52304a5b8f4b", "8759f042-5232-4255-8f17-36b5f6645ca1"]
+
+            let cmConfigurator, parameterList
+
+            window.onload = () => {
+                document.getElementById("assign-material").addEventListener("click", assignMaterial)
+                document.getElementById("width-input").addEventListener("change", assignMaterial)
+                document.getElementById("height-input").addEventListener("change", assignMaterial)
+            }
+
+            customElements.whenDefined("cm-configurator-main").then(() => {
+                cmConfigurator = document.querySelector("cm-configurator-main")
+                cmConfigurator.addEventListener("loadingCompleted", initializeMenu)
+            })
+
+            async function initializeMenu() {
+                const materialId = document.getElementById("material-id")
+                MATERIAL_IDS.forEach((id) => {
+                    const opt = document.createElement("option")
+                    opt.value = opt.textContent = id
+                    materialId.appendChild(opt)
+                })
+
+                parameterList = await cmConfigurator.getParameterList()
+                const materialInputSelect = document.getElementById("material-input")
+                materialInputSelect.innerHTML = ""
+                parameterList.forEach((param) => {
+                    //The configurator has multiple input types, we are only interested in the ones for material assignment
+                    if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.name, param.id)
+                })
+            }
+
+            function assignMaterial() {
+                const input = document.getElementById("material-input").value
+                const id = document.getElementById("material-id").value
+                console.log("Assigning material:", input, id)
+                const overlay = document.getElementById("overlay-url").value
+                const size = [parseFloat(document.getElementById("width-input").value), parseFloat(document.getElementById("height-input").value)]
+
+                //This uses the specified material as a base and adds the color from the image as an overlay
+                cmConfigurator.setMaterialByColorOverlay(input, id, overlay, size)
+            }
+        </script>
+    </body>
+</html>
