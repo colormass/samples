@@ -21,6 +21,9 @@
                             <label class="parameter-label full-width" for="material-input">Material Input:</label>
                             <select id="material-input" class="parameter-input full-width"></select>
 
+                            <label class="parameter-label full-width" for="current-material-id">Material Input Id:</label>
+                            <input id="current-material-id" class="parameter-input full-width" type="text" readonly />
+
                             <label class="parameter-label full-width" for="material-id">Material Id:</label>
                             <select id="material-id" class="parameter-input full-width"></select>
 
@@ -35,6 +38,25 @@
             </div>
             <div class="configurator-container">
                 <cm-configurator-main ui-style="default" template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213" use-external-menu="true"> </cm-configurator-main>
+
+                <!-- Instead of calling setParameter, the parameters can also be specified initially, see https://docs.colormass.com/dev/configurator/web-components/setting-parameters -->
+                <!-- Specifying an initial material id: -->
+                <!-- <cm-configurator-main
+                    ui-style="default"
+                    template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213"
+                    use-external-menu="true"
+                    parameters="param(ccd2e2fd-01e9-4280-9119-4cdcfcf52125)=material(f4ad6c8c-0c8c-44dd-9e21-6412ada1a2c9)"
+                >
+                </cm-configurator-main> -->
+
+                <!-- Specifying an initial material article id: -->
+                <!-- <cm-configurator-main
+                    ui-style="default"
+                    template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213"
+                    use-external-menu="true"
+                    parameters="param(ccd2e2fd-01e9-4280-9119-4cdcfcf52125)=material-article-id(123456789)"
+                >
+                </cm-configurator-main> -->
             </div>
         </div>
 
@@ -55,6 +77,9 @@
             window.onload = () => {
                 document.getElementById("assign-material-id").addEventListener("click", assignMaterialById)
                 document.getElementById("assign-article-id").addEventListener("click", assignMaterialByArticleId)
+                document.getElementById("material-input").addEventListener("change", (e) => {
+                    document.getElementById("current-material-id").value = e.target.value
+                })
             }
 
             customElements.whenDefined("cm-configurator-main").then(() => {
@@ -84,6 +109,8 @@
                     //The configurator has multiple input types, we are only interested in the ones for material assignment
                     if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.name, param.id)
                 })
+
+                if (materialInputSelect.options.length > 0) document.getElementById("current-material-id").value = materialInputSelect.value
             }
 
             function assignMaterialById() {
