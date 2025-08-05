@@ -21,27 +21,65 @@
                             <label class="parameter-label full-width" for="material-input">Material Input:</label>
                             <select id="material-input" class="parameter-input full-width"></select>
 
+                            <label class="parameter-label full-width" for="current-material-id">Material Input Id:</label>
+                            <input id="current-material-id" class="parameter-input full-width" type="text" readonly />
+
                             <label class="parameter-label full-width" for="material-id">Material Id:</label>
                             <select id="material-id" class="parameter-input full-width"></select>
 
-                            <button id="assign-material" class="full-width" type="button">Assign Material</button>
+                            <label class="parameter-label full-width" for="material-article-id">Material Article Id:</label>
+                            <select id="material-article-id" class="parameter-input full-width"></select>
+
+                            <button id="assign-material-id" class="full-width" type="button">Assign Material by ID</button>
+                            <button id="assign-article-id" class="full-width" type="button">Assign Material by Article ID</button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="configurator-container">
                 <cm-configurator-main ui-style="default" template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213" use-external-menu="true"> </cm-configurator-main>
+
+                <!-- Instead of calling setParameter, the parameters can also be specified initially, see https://docs.colormass.com/dev/configurator/web-components/setting-parameters -->
+                <!-- Specifying an initial material id: -->
+                <!-- <cm-configurator-main
+                    ui-style="default"
+                    template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213"
+                    use-external-menu="true"
+                    parameters="param(ccd2e2fd-01e9-4280-9119-4cdcfcf52125)=material(f4ad6c8c-0c8c-44dd-9e21-6412ada1a2c9)"
+                >
+                </cm-configurator-main> -->
+
+                <!-- Specifying an initial material article id: -->
+                <!-- <cm-configurator-main
+                    ui-style="default"
+                    template-uuid="dd1f4005-0e21-48ab-8d96-fefadd5cd213"
+                    use-external-menu="true"
+                    parameters="param(ccd2e2fd-01e9-4280-9119-4cdcfcf52125)=material-article-id(123456789)"
+                >
+                </cm-configurator-main> -->
             </div>
         </div>
 
         <script>
             //The following uuids are material uuids
-            const MATERIAL_IDS = ["f4ad6c8c-0c8c-44dd-9e21-6412ada1a2c9", "9edd086b-b53d-4193-9769-360d01b5507e", "2b69dfc3-a7e8-4fe9-b6a9-c52a3c992545"]
+            const MATERIAL_IDS_COLORMASS = [
+                "f4ad6c8c-0c8c-44dd-9e21-6412ada1a2c9",
+                "9edd086b-b53d-4193-9769-360d01b5507e",
+                "2b69dfc3-a7e8-4fe9-b6a9-c52a3c992545",
+            ]
+
+            //The following ids are the customer's. In order to work, they need to be assigned to the material first. Also, both the template displayed in the configurator
+            //and the material must belong to the same organization.
+            const MATERIAL_IDS_CUSTOMER = ["123456789"]
 
             let cmConfigurator, parameterList
 
             window.onload = () => {
-                document.getElementById("assign-material").addEventListener("click", assignMaterial)
+                document.getElementById("assign-material-id").addEventListener("click", assignMaterialById)
+                document.getElementById("assign-article-id").addEventListener("click", assignMaterialByArticleId)
+                document.getElementById("material-input").addEventListener("change", (e) => {
+                    document.getElementById("current-material-id").value = e.target.value
+                })
             }
 
             customElements.whenDefined("cm-configurator-main").then(() => {
@@ -51,10 +89,17 @@
 
             async function initializeMenu() {
                 const materialId = document.getElementById("material-id")
-                MATERIAL_IDS.forEach((id) => {
+                MATERIAL_IDS_COLORMASS.forEach((id) => {
                     const opt = document.createElement("option")
                     opt.value = opt.textContent = id
                     materialId.appendChild(opt)
+                })
+
+                const materialArticleId = document.getElementById("material-article-id")
+                MATERIAL_IDS_CUSTOMER.forEach((id) => {
+                    const opt = document.createElement("option")
+                    opt.value = opt.textContent = id
+                    materialArticleId.appendChild(opt)
                 })
 
                 parameterList = await cmConfigurator.getParameterList()
@@ -64,13 +109,22 @@
                     //The configurator has multiple input types, we are only interested in the ones for material assignment
                     if (param.type === "material") materialInputSelect.options[materialInputSelect.options.length] = new Option(param.name, param.id)
                 })
+
+                if (materialInputSelect.options.length > 0) document.getElementById("current-material-id").value = materialInputSelect.value
             }
 
-            function assignMaterial() {
+            function assignMaterialById() {
                 const input = document.getElementById("material-input").value
                 const id = document.getElementById("material-id").value
-                console.log("Assigning material:", input, id)
-                cmConfigurator.setMaterialById(input, id)
+                console.log("Assigning material by ID:", input, id)
+                cmConfigurator.setParameter(input, "material", id)
+            }
+
+            function assignMaterialByArticleId() {
+                const input = document.getElementById("material-input").value
+                const id = document.getElementById("material-article-id").value
+                console.log("Assigning material by Article ID:", input, id)
+                cmConfigurator.setParameter(input, "material-article-id", id)
             }
         </script>
     </body>
