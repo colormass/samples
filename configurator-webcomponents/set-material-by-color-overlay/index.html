@@ -80,13 +80,13 @@
 
             function assignMaterial() {
                 const input = document.getElementById("material-input").value
-                const id = document.getElementById("material-id").value
-                console.log("Assigning material:", input, id)
+                const materialId = document.getElementById("material-id").value
+                console.log("Assigning material:", input, materialId)
                 const overlay = document.getElementById("overlay-url").value
                 const size = [parseFloat(document.getElementById("width-input").value), parseFloat(document.getElementById("height-input").value)]
 
                 //This uses the specified material as a base and adds the color from the image as an overlay
-                cmConfigurator.setMaterialByColorOverlay(input, id, overlay, size)
+                cmConfigurator.setParameter(input, "material", {materialId, overlay, size})
             }
         </script>
     </body>
