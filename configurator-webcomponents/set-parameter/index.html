@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link href="https://storage.googleapis.com/cm-platform-prod-static/fonts/fontawesome-pro-6.0.0-alpha3/css/all.css" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,600,700" rel="stylesheet" />
+        <link rel="stylesheet" href="../styles/sample.css" />
+        <link rel="stylesheet" href="../styles/ui.css" />
+
+        <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
+
+        <title>Custom Menu | Example</title>
+        <meta charset="UTF-8" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="menu" id="menu-container">
+                <div class="menu-controls">
+                    <div class="menu-section">
+                        <div class="parameter-grid">
+                            <label class="parameter-label full-width" for="text-label">Label:</label>
+                            <input id="text-label" class="parameter-input full-width" type="text" value="DC" />
+
+                            <button id="update-label" class="full-width" type="button">Update Label</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main
+                    ui-style="default"
+                    template-uuid="41c6faa3-b85c-4a2a-80cd-ca13e13111a2"
+                    use-external-menu="true"
+                    parameters="param(label)=string(DC)"
+                >
+                </cm-configurator-main>
+            </div>
+        </div>
+
+        <script>
+            let cmConfigurator, parameterList
+
+            window.onload = () => {
+                document.getElementById("update-label").addEventListener("click", updateLabel)
+            }
+
+            customElements.whenDefined("cm-configurator-main").then(() => {
+                cmConfigurator = document.querySelector("cm-configurator-main")
+                cmConfigurator.addEventListener("loadingCompleted", loadingCompleted)
+            })
+
+            async function loadingCompleted() {
+                console.log("loadingCompleted")
+            }
+
+            function updateLabel() {
+                const materialId = document.getElementById("text-label").value
+                cmConfigurator.setParameter("label", "string", materialId)
+            }
+        </script>
+    </body>
+</html>
