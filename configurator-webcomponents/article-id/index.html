@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+    <head>
+        <link rel="preconnect" href="https://configurator.colormass.com" />
+        <link href="https://configurator.colormass.com/styles.css" rel="stylesheet" />
+        <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
+
+        <link rel="stylesheet" href="../styles/sample.css" />
+        <link rel="stylesheet" href="../styles/ui.css" />
+
+        <title>Custom Menu | Example</title>
+        <meta charset="UTF-8" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="menu" id="menu-container">
+                <div class="menu-controls">
+                    <div class="menu-section">
+                        <div class="parameter-grid">
+                            <label class="parameter-label full-width" for="text-label">Label:</label>
+                            <input id="text-label" class="parameter-input full-width" type="text" value="DC" />
+
+                            <button id="update-label" class="full-width" type="button">Update Label</button>
+
+                            <button id="gold-material" class="full-width" type="button">Gold</button>
+                            <button id="silver-material" class="full-width" type="button">Silver</button>
+                            <button id="black-material" class="full-width" type="button">Black</button>
+                            <button id="white-material" class="full-width" type="button">White</button>
+                            <button id="tone-on-tone-material" class="full-width" type="button">Tone on tone</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="configurator-container">
+                <cm-configurator-main
+                    ui-style="default"
+                    organization-uuid="314aa687-762a-47ad-9ecb-ab91f2101965"
+                    article-id="AB0614AAM0BHTPA"
+                    use-external-menu="true"
+                    parameters="param(label)=string(DC)&param(material)=string(gold)"
+                >
+                </cm-configurator-main>
+            </div>
+        </div>
+
+        <script>
+            let cmConfigurator, parameterList
+
+            window.onload = () => {
+                document.getElementById("update-label").addEventListener("click", updateLabel)
+                document.getElementById("gold-material").addEventListener("click", () => updateMaterial("gold"))
+                document.getElementById("silver-material").addEventListener("click", () => updateMaterial("silver"))
+                document.getElementById("black-material").addEventListener("click", () => updateMaterial("black"))
+                document.getElementById("white-material").addEventListener("click", () => updateMaterial("white"))
+                document.getElementById("tone-on-tone-material").addEventListener("click", () => updateMaterial("tone-on-tone"))
+            }
+
+            customElements.whenDefined("cm-configurator-main").then(() => {
+                cmConfigurator = document.querySelector("cm-configurator-main")
+                cmConfigurator.addEventListener("loadingCompleted", loadingCompleted)
+            })
+
+            async function loadingCompleted() {
+                console.log("loadingCompleted")
+            }
+
+            function updateLabel() {
+                const text = document.getElementById("text-label").value
+                cmConfigurator.setParameter("label", "string", text)
+            }
+
+            function updateMaterial(materialId) {
+                cmConfigurator.setParameter("material", "string", materialId)
+            }
+        </script>
+    </body>
+</html>
