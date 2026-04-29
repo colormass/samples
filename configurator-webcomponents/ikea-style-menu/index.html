@@ -140,6 +140,20 @@
                 padding-top: 10px;
             }
 
+            ::part(cm-scroll-arrow) {
+                background: white;
+                color: var(--color);
+                border: 1px solid var(--color);
+                box-shadow: none;
+                width: 28px;
+                height: 28px;
+            }
+
+            ::part(cm-scroll-arrow):hover {
+                background: var(--color);
+                color: white;
+            }
+
             .configurator-container {
                 flex-grow: 1;
                 box-sizing: border-box;
