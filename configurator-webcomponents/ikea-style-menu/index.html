@@ -19,6 +19,9 @@
                 --cm-tooltip-font-size: 14px;
                 --cm-tooltip-background-color: gray;
                 font-family: "Roboto";
+                /* Theme accent — defined globally so part rules below can use it
+                   regardless of which custom element they target. */
+                --color: #d78a5e;
             }
 
             .container {
@@ -36,105 +39,105 @@
                 flex-direction: column;
                 align-items: flex-start;
                 min-width: 400px;
-                --color: #d78a5e;
+            }
 
-                /* The web components use the shadow dom and cannot be accessed directly. The menu currently exposes
-                three parts to style: cm-config-group-title, cm-icons-container and cm-icon-container.
-                See part="..." in the browser devtools. */
-                ::part(cm-config-group-title) {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: rgba(0, 140, 153, 0);
-                    background-color: var(--color);
-                    padding: 10px;
-                    color: white;
-                    font-size: 16px;
-                }
+            /* Part rules are at document scope (not nested inside .menu) so they also
+               match the menu rendered inside <cm-configurator-main> during fullscreen.
+               The configurator forwards these parts via exportparts on cm-config-menu. */
 
-                ::part(cm-config-group-title):hover {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: var(--color);
-                    background-color: rgba(255, 255, 255, 1);
-                    color: var(--color);
-                    cursor: pointer;
-                }
+            /* Accordion / icons UI */
+            ::part(cm-config-group-title) {
+                border-width: 1px;
+                border-style: solid;
+                border-color: rgba(0, 140, 153, 0);
+                background-color: var(--color);
+                padding: 10px;
+                color: white;
+                font-size: 16px;
+            }
 
-                ::part(cm-config-group-title-active) {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: var(--color);
-                    background-color: rgba(255, 255, 255, 1);
-                    color: var(--color);
-                }
+            ::part(cm-config-group-title):hover {
+                border-width: 1px;
+                border-style: solid;
+                border-color: var(--color);
+                background-color: rgba(255, 255, 255, 1);
+                color: var(--color);
+                cursor: pointer;
+            }
 
-                ::part(cm-icons-container) {
-                    padding-top: 10px;
-                    padding-bottom: 10px;
-                }
+            ::part(cm-config-group-title-active) {
+                border-width: 1px;
+                border-style: solid;
+                border-color: var(--color);
+                background-color: rgba(255, 255, 255, 1);
+                color: var(--color);
+            }
 
-                ::part(cm-icon-container) {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: rgba(0, 140, 153, 0);
-                }
+            ::part(cm-icons-container) {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
 
-                ::part(cm-icon-container):hover {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: var(--color);
-                }
+            ::part(cm-icon-container) {
+                border-width: 1px;
+                border-style: solid;
+                border-color: rgba(0, 140, 153, 0);
+            }
 
-                ::part(cm-icon-with-caption) {
-                    gap: 8px;
-                    font-size: 10px;
-                }
+            ::part(cm-icon-container):hover {
+                border-width: 1px;
+                border-style: solid;
+                border-color: var(--color);
+            }
 
-                ::part(cm-config-menu-icons) {
-                    gap: 10px;
-                }
+            ::part(cm-icon-with-caption) {
+                gap: 8px;
+                font-size: 10px;
+            }
 
-                /* Mobile tabs UI — exposed parts: cm-mobile-tabs-menu, cm-mobile-tabs-groups,
-                   cm-mobile-tab, cm-mobile-tabs-labels, cm-mobile-tabs-variants. */
-                ::part(cm-mobile-tabs-menu) {
-                    padding: 10px;
-                    /* Default is 75vw which leaves whitespace in our full-width strip.
-                       100% fills the parent, but still bounds the content so overflowing
-                       tabs trigger the scroll arrows. */
-                    max-width: 100%;
-                }
+            ::part(cm-config-menu-icons) {
+                gap: 10px;
+            }
 
-                ::part(cm-mobile-tabs-groups) {
-                    gap: 10px;
-                }
+            /* Mobile tabs UI */
+            ::part(cm-mobile-tabs-menu) {
+                padding: 10px;
+                /* Default is 75vw which leaves whitespace in our full-width strip.
+                   100% fills the parent, but still bounds the content so overflowing
+                   tabs trigger the scroll arrows. */
+                max-width: 100%;
+            }
 
-                ::part(cm-mobile-tab) {
-                    background-color: var(--color);
-                    color: white;
-                    padding: 8px 14px;
-                    font-size: 14px;
-                    font-weight: 500;
-                    border: 1px solid rgba(0, 140, 153, 0);
-                }
+            ::part(cm-mobile-tabs-groups) {
+                gap: 10px;
+            }
 
-                ::part(cm-mobile-tab):hover {
-                    background-color: white;
-                    color: var(--color);
-                    border-color: var(--color);
-                    cursor: pointer;
-                }
+            ::part(cm-mobile-tab) {
+                background-color: var(--color);
+                color: white;
+                padding: 8px 14px;
+                font-size: 14px;
+                font-weight: 500;
+                border: 1px solid rgba(0, 140, 153, 0);
+            }
 
-                ::part(cm-mobile-tab-active) {
-                    background-color: white;
-                    color: var(--color);
-                    border-color: var(--color);
-                }
+            ::part(cm-mobile-tab):hover {
+                background-color: white;
+                color: var(--color);
+                border-color: var(--color);
+                cursor: pointer;
+            }
 
-                ::part(cm-mobile-tabs-variants),
-                ::part(cm-mobile-tabs-labels) {
-                    gap: 10px;
-                    padding-top: 10px;
-                }
+            ::part(cm-mobile-tab-active) {
+                background-color: white;
+                color: var(--color);
+                border-color: var(--color);
+            }
+
+            ::part(cm-mobile-tabs-variants),
+            ::part(cm-mobile-tabs-labels) {
+                gap: 10px;
+                padding-top: 10px;
             }
 
             .configurator-container {
