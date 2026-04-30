@@ -41,10 +41,6 @@
                 min-width: 400px;
             }
 
-            /* Part rules are at document scope (not nested inside .menu) so they also
-               match the menu rendered inside <cm-configurator-main> during fullscreen.
-               The configurator forwards these parts via exportparts on cm-config-menu. */
-
             /* Accordion / icons UI */
             ::part(cm-config-group-title) {
                 border-width: 1px;
@@ -73,7 +69,9 @@
                 color: var(--color);
             }
 
-            ::part(cm-icons-container) {
+            ::part(cm-icons-container),
+            ::part(cm-labels-container) {
+                gap: 10px;
                 padding-top: 10px;
                 padding-bottom: 10px;
             }
@@ -97,47 +95,13 @@
 
             ::part(cm-config-menu-icons) {
                 gap: 10px;
-            }
-
-            /* Mobile tabs UI */
-            ::part(cm-mobile-tabs-menu) {
                 padding: 10px;
-                /* Default is 75vw which leaves whitespace in our full-width strip.
-                   100% fills the parent, but still bounds the content so overflowing
-                   tabs trigger the scroll arrows. */
                 max-width: 100%;
             }
 
+            /* Horizontal scroll wrapper for mobileTabs group selectors */
             ::part(cm-mobile-tabs-groups) {
                 gap: 10px;
-            }
-
-            ::part(cm-mobile-tab) {
-                background-color: var(--color);
-                color: white;
-                padding: 8px 14px;
-                font-size: 14px;
-                font-weight: 500;
-                border: 1px solid rgba(0, 140, 153, 0);
-            }
-
-            ::part(cm-mobile-tab):hover {
-                background-color: white;
-                color: var(--color);
-                border-color: var(--color);
-                cursor: pointer;
-            }
-
-            ::part(cm-mobile-tab-active) {
-                background-color: white;
-                color: var(--color);
-                border-color: var(--color);
-            }
-
-            ::part(cm-mobile-tabs-variants),
-            ::part(cm-mobile-tabs-labels) {
-                gap: 10px;
-                padding-top: 10px;
             }
 
             ::part(cm-scroll-arrow) {
