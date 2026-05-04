@@ -1,0 +1,240 @@
+<!doctype html>
+<html style="height: 100%">
+    <head>
+        <link rel="preconnect" href="http://localhost:4300" />
+        <!-- Load the colormass configurator styles -->
+        <link href="http://localhost:4300/styles.css" rel="stylesheet" />
+        <!-- Load the colormass configurator web components -->
+        <script src="http://localhost:4300/cm-configurator.js" type="module"></script>
+
+        <title>Configurator Web Component Example</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+            @font-face {
+                font-display: swap;
+                font-family: "Atlas Grotesk";
+                font-weight: 300;
+                src: url("fonts/atlas-grotesk/light.woff2") format("woff2");
+            }
+
+            :root {
+                /* Available css variables */
+                --cm-menu-max-num-cols: 8;
+                --cm-menu-icon-size: 50px;
+                --cm-menu-gap: 10px;
+                /* 16px covers Chrome thin-scrollbar variance across OS themes. */
+                --cm-scrollbar-buffer: 16px;
+                --cm-menu-background-color: white;
+                --cm-tooltip-font-size: 14px;
+                --cm-tooltip-background-color: gray;
+                /* Picked up by the platform's :host base styles, so the font
+                   crosses the shadow boundary into all menu parts. */
+                --cm-font-family: "Atlas Grotesk", system-ui, sans-serif;
+                font-family: "Atlas Grotesk", system-ui, sans-serif;
+                /* Inherits to all menu text — only weight 300 (light) is loaded. */
+                font-weight: 300;
+                /* Theme accent — defined globally so part rules below can use it
+                   regardless of which custom element they target. */
+                --color: #d78a5e;
+                /* Reusable "bold without layout shift" effect. */
+                --cm-bold-effect:
+                    0 0 0.7px currentColor,
+                    0 0 0.7px currentColor,
+                    0 0 0.7px currentColor;
+            }
+
+            .container {
+                display: flex;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .menu {
+                justify-content: center;
+                width: 15%;
+                background-color: white;
+                /* Inner icons-container scrolls; clip anything that spills. */
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                min-width: 460px;
+            }
+
+            /* Opt the host into the height cascade so the inner icons-container
+               can have a bounded scroll region. Default platform behavior is
+               content-sized; we explicitly fill the menu's height here. */
+            .menu cm-configurator-menu {
+                display: block;
+                height: 100%;
+            }
+
+            /* Accordion / icons UI */
+            ::part(cm-config-group-title) {
+                border: none;
+                border-bottom: 1px solid #ddd;
+                background-color: transparent;
+                padding: 10px;
+                color: black;
+                font-size: 16px;
+                /* Anchor for the absolutely-positioned chevron parts. */
+                position: relative;
+                /* Center the span; the chevron(s) are taken out of flow so
+                   they don't push the text. */
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            ::part(cm-config-group-title-active) {
+                text-shadow: var(--cm-bold-effect);
+            }
+
+            /* Hover bolds the label without changing glyph metrics, so neither
+               the centered text nor the absolute chevrons shift. */
+            @media (hover: hover) {
+                ::part(cm-config-group-title):hover {
+                    text-shadow: var(--cm-bold-effect);
+                }
+            }
+
+            /* Back/forward chevrons — same FA icon styling, opposite sides.
+               Absolute-positioned so the title span stays centered regardless
+               of which arrow is rendered. */
+            ::part(cm-config-group-back),
+            ::part(cm-config-group-forward) {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #bbb;
+                font-size: 12px;
+                line-height: 1;
+            }
+            ::part(cm-config-group-back) {
+                left: 10px;
+            }
+            ::part(cm-config-group-forward) {
+                right: 10px;
+            }
+
+            ::part(cm-icons-container),
+            ::part(cm-labels-container) {
+                padding-top: 10px;
+                padding-bottom: 10px;
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                scrollbar-gutter: stable;
+                /* Stack rows from the top — wrap-flex would otherwise center them. */
+                align-content: flex-start;
+            }
+
+            ::part(cm-icon-container) {
+                border: 1px solid transparent;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            @media (hover: hover) {
+                ::part(cm-icon-container):hover {
+                    border-color: var(--color);
+                }
+            }
+
+            ::part(cm-icon-with-caption) {
+                gap: 8px;
+                font-size: 10px;
+            }
+
+            ::part(cm-caption) {
+                text-align: left;
+            }
+
+            cm-configurator-menu[ui-style="accordion"] {
+                --cm-menu-icon-size: 128px;
+                --cm-menu-max-num-cols: 3;
+            }
+
+            /* Scoped to accordion: mobileTabs uses the same part name but a different layout. */
+            cm-configurator-menu[ui-style="accordion"]::part(cm-config-menu-icons) {
+                gap: 36px;
+                padding: 10px;
+                box-sizing: border-box;
+                max-width: calc(
+                    var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 20px +
+                        var(--cm-scrollbar-buffer)
+                );
+            }
+
+            /* Override the platform's default max-width: 75vw. */
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-config-menu-icons) {
+                max-width: 100%;
+            }
+
+            /* Horizontal scroll wrapper for mobileTabs group selectors */
+            ::part(cm-mobile-tabs-groups) {
+                gap: 10px;
+            }
+
+            ::part(cm-scroll-arrow) {
+                background: white;
+                color: #666;
+                border: 1px solid #ccc;
+                box-shadow: none;
+                width: 28px;
+                height: 28px;
+            }
+
+            ::part(cm-scroll-arrow):hover {
+                background: #555;
+                color: white;
+                border-color: #555;
+            }
+
+            .configurator-container {
+                flex-grow: 1;
+                box-sizing: border-box;
+                min-width: 0;
+                min-height: 0;
+            }
+
+            /* Narrow viewport: menu drops to the bottom */
+            @media (max-width: 900px) {
+                .container {
+                    flex-direction: column;
+                }
+                .menu {
+                    width: 100%;
+                    min-width: 0;
+                    /* Fits tab row + icon row + caption + paddings/gaps. */
+                    height: 155px;
+                    flex-shrink: 0;
+                }
+            }
+        </style>
+    </head>
+    <body style="width: 100%; height: 100%; margin: 0">
+        <div class="container">
+            <div class="configurator-container">
+                <cm-configurator-main template-uuid="a92a20c7-434f-41e5-9f70-7e17459f7e27" use-external-menu="true"></cm-configurator-main>
+            </div>
+            <div class="menu">
+                <!-- Override the default settings for the menu appearance with "accordion"  -->
+                <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
+            </div>
+        </div>
+        <script>
+            // Switch the configurator menu's ui-style based on viewport width.
+            // Wide → accordion side panel. Narrow → mobileTabs strip at the bottom.
+            const menu = document.querySelector("cm-configurator-menu")
+            const mq = window.matchMedia("(max-width: 900px)")
+            const onSizeChange = () => {
+                const next = mq.matches ? "mobileTabs" : "accordion"
+                menu.setAttribute("ui-style", next)
+            }
+            onSizeChange("init")
+            mq.addEventListener("change", onSizeChange)
+            window.addEventListener("resize", onSizeChange)
+        </script>
+    </body>
+</html>
