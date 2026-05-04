@@ -15,6 +15,9 @@
                 /* Available css variables */
                 --cm-menu-max-num-cols: 8;
                 --cm-menu-icon-size: 50px;
+                --cm-menu-gap: 10px;
+                /* 16px covers Chrome thin-scrollbar variance across OS themes. */
+                --cm-scrollbar-buffer: 16px;
                 --cm-menu-background-color: rgba(255, 255, 255, 0);
                 --cm-tooltip-font-size: 14px;
                 --cm-tooltip-background-color: gray;
@@ -34,11 +37,20 @@
                 justify-content: center;
                 width: 15%;
                 background-color: #f4f4f4;
+                /* Inner icons-container scrolls; clip anything that spills. */
                 overflow: hidden;
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
-                min-width: 400px;
+                min-width: 460px;
+            }
+
+            /* Opt the host into the height cascade so the inner icons-container
+               can have a bounded scroll region. Default platform behavior is
+               content-sized; we explicitly fill the menu's height here. */
+            .menu cm-configurator-menu {
+                display: block;
+                height: 100%;
             }
 
             /* Accordion / icons UI */
@@ -52,13 +64,16 @@
                 font-size: 16px;
             }
 
-            ::part(cm-config-group-title):hover {
-                border-width: 1px;
-                border-style: solid;
-                border-color: var(--color);
-                background-color: rgba(255, 255, 255, 1);
-                color: var(--color);
-                cursor: pointer;
+            /* Avoid sticky :hover after a tap on touch devices. */
+            @media (hover: hover) {
+                ::part(cm-config-group-title):hover {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: var(--color);
+                    background-color: rgba(255, 255, 255, 1);
+                    color: var(--color);
+                    cursor: pointer;
+                }
             }
 
             ::part(cm-config-group-title-active) {
@@ -71,21 +86,34 @@
 
             ::part(cm-icons-container),
             ::part(cm-labels-container) {
-                gap: 10px;
                 padding-top: 10px;
                 padding-bottom: 10px;
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                scrollbar-gutter: stable;
+                /* Stack rows from the top — wrap-flex would otherwise center them. */
+                align-content: flex-start;
             }
 
             ::part(cm-icon-container) {
                 border-width: 1px;
                 border-style: solid;
                 border-color: rgba(0, 140, 153, 0);
+                border-radius: 0;
+                box-shadow: none;
             }
 
-            ::part(cm-icon-container):hover {
-                border-width: 1px;
-                border-style: solid;
-                border-color: var(--color);
+            @media (hover: hover) {
+                ::part(cm-icon-container):hover {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: var(--color);
+                }
+            }
+
+            ::part(cm-icon) {
+                border-radius: 0;
             }
 
             ::part(cm-icon-with-caption) {
@@ -93,9 +121,28 @@
                 font-size: 10px;
             }
 
-            ::part(cm-config-menu-icons) {
+            ::part(cm-caption) {
+                text-align: left;
+            }
+
+            cm-configurator-menu[ui-style="accordion"] {
+                --cm-menu-icon-size: 128px;
+                --cm-menu-max-num-cols: 3;
+            }
+
+            /* Scoped to accordion: mobileTabs uses the same part name but a different layout. */
+            cm-configurator-menu[ui-style="accordion"]::part(cm-config-menu-icons) {
                 gap: 10px;
                 padding: 10px;
+                box-sizing: border-box;
+                max-width: calc(
+                    var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 20px +
+                        var(--cm-scrollbar-buffer)
+                );
+            }
+
+            /* Override the platform's default max-width: 75vw. */
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-config-menu-icons) {
                 max-width: 100%;
             }
 
@@ -134,7 +181,8 @@
                 .menu {
                     width: 100%;
                     min-width: 0;
-                    height: 140px;
+                    /* Fits tab row + icon row + caption + paddings/gaps. */
+                    height: 155px;
                     flex-shrink: 0;
                 }
             }
@@ -147,7 +195,7 @@
             </div>
             <div class="menu">
                 <!-- Override the default settings for the menu appearance with "accordion"  -->
-                <cm-configurator-menu ui-style="accordion" accordion-style="autoClose" use-captions="true" style="width: 100%"></cm-configurator-menu>
+                <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
             </div>
         </div>
         <script>
