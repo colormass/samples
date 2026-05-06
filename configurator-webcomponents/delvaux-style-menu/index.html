@@ -17,6 +17,18 @@
                 font-weight: 300;
                 src: url("fonts/atlas-grotesk/light.woff2") format("woff2");
             }
+            @font-face {
+                font-display: swap;
+                font-family: "Atlas Grotesk";
+                font-weight: 400;
+                src: url("fonts/atlas-grotesk/AtlasGrotesk-Regular-Web.woff2") format("woff2");
+            }
+            @font-face {
+                font-display: swap;
+                font-family: "Genath";
+                font-weight: 400;
+                src: url("fonts/genath/Genath-Regular.woff2") format("woff2");
+            }
 
             :root {
                 /* Available css variables */
@@ -36,18 +48,76 @@
                 font-weight: 300;
                 /* Theme accent — defined globally so part rules below can use it
                    regardless of which custom element they target. */
-                --color: #d78a5e;
+                --color: #000000;
                 /* Reusable "bold without layout shift" effect. */
-                --cm-bold-effect:
-                    0 0 0.7px currentColor,
-                    0 0 0.7px currentColor,
-                    0 0 0.7px currentColor;
+                --cm-bold-effect: 0 0 0.7px currentColor, 0 0 0.7px currentColor, 0 0 0.7px currentColor;
+            }
+
+            body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .page-header {
+                flex-shrink: 0;
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                padding: 14px 24px;
+                background: white;
+                color: black;
+            }
+
+            .page-header .eye {
+                cursor: pointer;
+            }
+
+            .page-header .brand {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .page-header .brand svg {
+                height: 16px;
+                width: auto;
+            }
+
+            .page-header .locale {
+                justify-self: end;
+                font-family: "Atlas Grotesk", system-ui, sans-serif;
+                font-weight: 400;
+                font-size: 9px;
+                letter-spacing: 0.18em;
+            }
+
+            /* Eye toggle: filled pupil + visible price by default; clicking
+               adds `.price-hidden` to <body>, outlining the pupil and hiding
+               the price (visibility, not display, so the layout stays put). */
+            .page-header .eye path {
+                fill: none;
+            }
+            .page-header .eye circle {
+                fill: currentColor;
+            }
+            .price-hidden .page-header .eye circle {
+                fill: none;
+            }
+            .price-hidden .action-panel .price {
+                visibility: hidden;
             }
 
             .container {
                 display: flex;
-                height: 100%;
+                flex: 1;
+                min-height: 0;
                 overflow: hidden;
+                /* Anchor for the narrow-mobile floating action-panel, which
+                   pins to the top-right of the configurator viewport. */
+                position: relative;
             }
 
             .menu {
@@ -60,14 +130,22 @@
                 flex-direction: column;
                 align-items: flex-start;
                 min-width: 460px;
+                /* Push the menu content below the header. border-box keeps
+                   the host's height: 100% bounded inside the menu. */
+                box-sizing: border-box;
+                padding-top: 32px;
             }
 
             /* Opt the host into the height cascade so the inner icons-container
-               can have a bounded scroll region. Default platform behavior is
-               content-sized; we explicitly fill the menu's height here. */
+               can have a bounded scroll region. `flex: 1` grows on whichever
+               axis `.menu` is laid out (column on desktop, row in the mobile
+               strip); `min-height: 0` lets it shrink in column mode, and
+               `min-width: 0` is added in the mobile media query to do the
+               same in row mode. */
             .menu cm-configurator-menu {
                 display: block;
-                height: 100%;
+                flex: 1;
+                min-height: 0;
             }
 
             /* Accordion / icons UI */
@@ -198,6 +276,57 @@
                 min-height: 0;
             }
 
+            .action-panel {
+                flex-shrink: 0;
+                align-self: stretch;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 10px;
+                padding: 16px 8px 16px 24px;
+            }
+
+            .action-panel .price {
+                font-family: "Genath", serif;
+                font-weight: 400;
+                font-size: 22px;
+                color: black;
+                text-align: right;
+            }
+
+            .action-panel .save-btn {
+                font-family: "Atlas Grotesk", system-ui, sans-serif;
+                font-weight: 400;
+                font-size: 10px;
+                letter-spacing: 0.18em;
+                color: white;
+                background: black;
+                border: none;
+                /* Only Atlas Grotesk Light (300) is loaded, so synthesized
+                   bold would look ugly. Use the same text-shadow trick used
+                   on hover elsewhere to thicken the strokes. */
+                text-shadow: var(--cm-bold-effect);
+                /* Asymmetric: extra top, less bottom — compensates for
+                   uppercase Atlas Grotesk's high glyphs and pushes the text
+                   onto the visual center of the button. */
+                padding: 8px 5px 8px 10px;
+                cursor: pointer;
+                /* Flex centers vertically; flex-end keeps the label right-
+                   aligned within the wider button. */
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                /* Keep the button wider than the label — extra black extends
+                   to the left of the right-aligned text. */
+                min-width: 240px;
+            }
+
+            @media (hover: hover) {
+                .action-panel .save-btn:hover {
+                    background: #333;
+                }
+            }
+
             /* Narrow viewport: menu drops to the bottom */
             @media (max-width: 900px) {
                 .container {
@@ -209,11 +338,70 @@
                     /* Fits tab row + icon row + caption + paddings/gaps. */
                     height: 155px;
                     flex-shrink: 0;
+                    padding-top: 0;
+                    /* Lay menu + action-panel out side-by-side so the panel
+                     * sits next to the mobile-tabs strip when it fits. */
+                    flex-direction: row;
+                }
+
+                .menu cm-configurator-menu {
+                    /* Take all the horizontal space left over by the panel. */
+                    min-width: 0;
+                }
+
+                .action-panel {
+                    /* Anchor the price+button to the bottom of the strip
+                       so the panel reads as the same "always at the bottom"
+                       element as in the desktop accordion layout. */
+                    justify-content: flex-end;
+                    padding: 0 16px 16px;
+                }
+            }
+
+            /* Very narrow phones: the panel can't fit alongside the tabs.
+             * Pin it to the top-right of the configurator (relative to
+             * `.container`) so it doesn't clash with the configurator's own
+             * bottom action bar. */
+            @media (max-width: 600px) {
+                .action-panel {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                    padding: 0;
+                    justify-content: flex-start;
                 }
             }
         </style>
     </head>
-    <body style="width: 100%; height: 100%; margin: 0">
+    <body>
+        <header class="page-header">
+            <svg class="eye" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span class="brand">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 14" fill="currentColor" aria-label="DELVAUX">
+                    <path
+                        d="M23.5439 0L24.9396 1.58716V11.5822L23.5439 13.1683H35.9383V10.7435H27.6969V7.36795H32.4996V5.14875H27.6969V2.30405H35.8388V0H23.5439Z"
+                    />
+                    <path d="M44.9902 0L46.3837 1.58716V11.5822L44.9902 13.1683H56.5184V10.7435H49.1432V0H44.9902Z" />
+                    <path
+                        d="M87.9954 0L88.8594 0.983408L82.3057 13.1683H85.1932L86.8622 9.87868H94.2505L95.9666 13.1683H99.1254L91.9493 0H87.9954ZM90.5886 2.67283L93.0824 7.62468H88.0118L90.5886 2.67283Z"
+                    />
+                    <path
+                        d="M13.4903 1.6644C12.2752 0.523252 10.722 0 8.44812 0H0L1.39453 1.58607V11.5822L0 13.1683H7.15969C9.09562 13.1683 10.8183 12.8877 11.8158 12.4645C12.9566 11.9804 13.8305 11.1776 14.478 10.0691C15.0905 9.01929 15.3245 7.62577 15.3245 6.50964C15.3245 4.56676 14.6552 2.75985 13.4892 1.6644M10.9605 9.833C10.1117 10.4302 8.83859 10.7239 6.93437 10.7239H4.14969V2.32145H8.28516C10.967 2.32145 12.4316 3.7933 12.4316 6.46069C12.4316 8.04459 11.8934 9.17485 10.9594 9.833"
+                    />
+                    <path d="M73.6704 0L74.611 1.04433L70.1901 9.61216L65.0691 0H61.8809L69.1116 13.1683H71.0235L77.9141 0H73.6704Z" />
+                    <path
+                        d="M113.628 0L115.023 1.58716V10.6119H108.495V0H105.736V10.3943C105.736 11.4702 105.997 12.1207 106.407 12.5189C106.809 12.9127 107.45 13.1694 108.494 13.1694H114.899C115.942 13.1694 116.582 12.9138 116.986 12.5189C117.395 12.1207 117.655 11.4702 117.655 10.3943V0H113.629H113.628Z"
+                    />
+                    <path
+                        d="M134.392 0L135.081 0.803915L132.191 4.52433L128.292 0H124.585L130.264 6.26161L124.561 13.1683H129.255L128.554 12.3503L131.866 8.04785L136.293 13.1683H140L133.698 6.2181L138.876 0H134.392Z"
+                    />
+                </svg>
+            </span>
+            <span class="locale">ENGLISH</span>
+        </header>
         <div class="container">
             <div class="configurator-container">
                 <cm-configurator-main template-uuid="a92a20c7-434f-41e5-9f70-7e17459f7e27" use-external-menu="true"></cm-configurator-main>
@@ -221,6 +409,10 @@
             <div class="menu">
                 <!-- Override the default settings for the menu appearance with "accordion"  -->
                 <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
+                <div class="action-panel">
+                    <div class="price">15.900 €</div>
+                    <button type="button" class="save-btn">SAVE MY CREATION</button>
+                </div>
             </div>
         </div>
         <script>
@@ -235,6 +427,12 @@
             onSizeChange("init")
             mq.addEventListener("change", onSizeChange)
             window.addEventListener("resize", onSizeChange)
+
+            // Eye icon toggles price visibility (default: visible).
+            // visibility:hidden keeps the layout stable.
+            document.querySelector(".page-header .eye").addEventListener("click", () => {
+                document.body.classList.toggle("price-hidden")
+            })
         </script>
     </body>
 </html>
