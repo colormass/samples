@@ -371,6 +371,59 @@
                 }
             }
 
+            /* Casual password gate to keep the page private when a URL
+             * leaks. Bypassed on localhost (see script). */
+            .password-gate {
+                position: fixed;
+                inset: 0;
+                background: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 100;
+            }
+            .password-gate form {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                width: 280px;
+            }
+            .password-gate input {
+                font-family: "Atlas Grotesk", system-ui, sans-serif;
+                font-size: 14px;
+                letter-spacing: 0.1em;
+                padding: 12px 14px;
+                border: 1px solid black;
+                background: white;
+                color: black;
+                outline: none;
+            }
+            .password-gate button {
+                font-family: "Atlas Grotesk", system-ui, sans-serif;
+                font-size: 11px;
+                letter-spacing: 0.18em;
+                padding: 12px 14px;
+                background: black;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+            .password-gate.shake form {
+                animation: gate-shake 0.32s;
+            }
+            @keyframes gate-shake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-6px);
+                }
+                75% {
+                    transform: translateX(6px);
+                }
+            }
+
             /* Very narrow phones: the panel can't fit alongside the tabs.
              * Pin it to the top-right of the configurator (relative to
              * `.container`) so it doesn't clash with the configurator's own
@@ -417,7 +470,10 @@
         </header>
         <div class="container">
             <div class="configurator-container">
-                <cm-configurator-main template-uuid="a92a20c7-434f-41e5-9f70-7e17459f7e27" use-external-menu="true"></cm-configurator-main>
+                <!-- template-uuid is set by JS *after* the password gate unlocks
+                     so the configurator (and its loading screen) doesn't start
+                     loading underneath the gate. -->
+                <cm-configurator-main use-external-menu="true"></cm-configurator-main>
             </div>
             <div class="menu">
                 <!-- Override the default settings for the menu appearance with "accordion"  -->
@@ -428,7 +484,50 @@
                 </div>
             </div>
         </div>
+        <div class="password-gate" id="password-gate">
+            <form id="password-form">
+                <input type="password" id="password-input" placeholder="PASSWORD" autocomplete="off" autofocus />
+                <button type="submit">ENTER</button>
+            </form>
+        </div>
         <script>
+            // ----- Password gate ------------------------------------------
+            // Hard-coded; obscurity-level protection so a leaked URL doesn't
+            // expose the page. Flip BYPASS_GATE to true (or run on localhost)
+            // to disable while developing.
+            const PASSWORD = "DelvauxMTO!"
+            const GATE_KEY = "delvaux-gate-unlocked"
+            const BYPASS_GATE = location.hostname === "localhost" || location.hostname === "127.0.0.1"
+            const TEMPLATE_UUID = "a92a20c7-434f-41e5-9f70-7e17459f7e27"
+
+            // Only kick off the configurator's template fetch once the gate
+            // is unlocked — otherwise its custom loading screen would overlay
+            // the password input.
+            const startConfigurator = () => {
+                document.querySelector("cm-configurator-main").setAttribute("template-uuid", TEMPLATE_UUID)
+            }
+
+            const gate = document.getElementById("password-gate")
+            if (BYPASS_GATE || sessionStorage.getItem(GATE_KEY) === "ok") {
+                gate.remove()
+                startConfigurator()
+            } else {
+                const form = document.getElementById("password-form")
+                const input = document.getElementById("password-input")
+                form.addEventListener("submit", (e) => {
+                    e.preventDefault()
+                    if (input.value === PASSWORD) {
+                        sessionStorage.setItem(GATE_KEY, "ok")
+                        gate.remove()
+                        startConfigurator()
+                    } else {
+                        gate.classList.add("shake")
+                        setTimeout(() => gate.classList.remove("shake"), 350)
+                        input.value = ""
+                    }
+                })
+            }
+
             // Switch the configurator menu's ui-style based on viewport width.
             // Wide → accordion side panel. Narrow → mobileTabs strip at the bottom.
             const menu = document.querySelector("cm-configurator-menu")
