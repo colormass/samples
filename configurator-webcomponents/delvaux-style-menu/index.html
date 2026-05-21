@@ -199,7 +199,11 @@
             ::part(cm-labels-container) {
                 padding-top: 10px;
                 padding-bottom: 10px;
-                flex: 1;
+                /* Content-sized basis lets the wrapper's `justify-content:
+                   center` actually center the title+icons unit when there's
+                   slack. flex-shrink + min-height: 0 + overflow-y: auto
+                   means it still scrolls when content exceeds the wrapper. */
+                flex: 0 1 auto;
                 min-height: 0;
                 overflow-y: auto;
                 scrollbar-gutter: stable;
@@ -242,6 +246,11 @@
                     var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 20px +
                         var(--cm-scrollbar-buffer)
                 );
+                /* Center the titles vertically when the wrapper is taller
+                   than its content (e.g. step-into top level with only a few
+                   groups). Stepped-in active state still fills the wrapper
+                   because the icons-container has `flex: 1`. */
+                justify-content: center;
             }
 
             /* Override the platform's default max-width: 75vw. */
