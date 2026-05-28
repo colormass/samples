@@ -9,15 +9,24 @@
 
         <title>Configurator Web Component Example</title>
         <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
             :root {
                 /* Available css variables */
                 --cm-menu-max-num-cols: 8;
                 --cm-menu-icon-size: 50px;
+                --cm-menu-gap: 10px;
+                /* 16px covers Chrome thin-scrollbar variance across OS themes. */
+                --cm-scrollbar-buffer: 16px;
                 --cm-menu-background-color: rgba(255, 255, 255, 0);
                 --cm-tooltip-font-size: 14px;
                 --cm-tooltip-background-color: gray;
                 font-family: "Roboto";
+                /* Theme accent — used for selected/hover states on pills and
+                   config buttons. */
+                --section-color: #049095;
+                --section-inactive-bg: #b2b4b9;
+                --section-inactive-color: white;
             }
 
             .container {
@@ -29,97 +38,340 @@
             .menu {
                 justify-content: center;
                 width: 15%;
-                background-color: #f4f4f4;
+                background-color: #eef0f1;
+                /* Inner icons-container scrolls; clip anything that spills. */
                 overflow: hidden;
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
-                min-width: 400px;
-                --color: #d78a5e;
+                /* Fits 5 × 80px icons + 4 × 10px gap + 20px outer padding +
+                   12px inner icons-container padding (for the selected outline) +
+                   8px section indent + 16px scrollbar buffer. */
+                min-width: 516px;
+            }
 
-                /* The web components use the shadow dom and cannot be accessed directly. The menu currently exposes
-                three parts to style: cm-config-group-title, cm-icons-container and cm-icon-container.
-                See part="..." in the browser devtools. */
-                ::part(cm-config-group-title) {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: rgba(0, 140, 153, 0);
-                    background-color: var(--color);
-                    padding: 10px;
-                    color: white;
-                    font-size: 16px;
-                }
+            /* Opt the host into the height cascade so the inner icons-container
+               can have a bounded scroll region. Default platform behavior is
+               content-sized; we explicitly fill the menu's height here. */
+            .menu cm-configurator-menu {
+                display: block;
+                height: 100%;
+            }
 
+            /* Group title: fully-rounded pill, uppercase, left-aligned title.
+               position: relative anchors the absolutely-positioned forward chevron
+               so it pins to the right edge while the text stays at the left.
+               Back chevron flows inline (only present in stepped-into state). */
+            ::part(cm-config-group-title) {
+                position: relative;
+                border: none;
+                background-color: var(--section-inactive-bg);
+                padding: 8px 36px 8px 18px;
+                color: var(--section-inactive-color);
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                border-radius: 999px;
+                justify-content: flex-start;
+            }
+
+
+            /* Avoid sticky :hover after a tap on touch devices. */
+            @media (hover: hover) {
                 ::part(cm-config-group-title):hover {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: var(--color);
-                    background-color: rgba(255, 255, 255, 1);
-                    color: var(--color);
-                    cursor: pointer;
-                }
-
-                ::part(cm-config-section-title) {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: rgba(0, 140, 153, 0);
-                    background-color: #6c757d;
-                    padding: 10px;
+                    background-color: var(--section-color);
                     color: white;
-                    font-size: 16px;
-                }
-
-                ::part(cm-config-section-title):hover {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: #6c757d;
-                    background-color: rgba(255, 255, 255, 1);
-                    color: #6c757d;
                     cursor: pointer;
                 }
+            }
 
-                ::part(cm-icons-container) {
-                    padding-top: 10px;
-                    padding-bottom: 10px;
+            ::part(cm-config-group-title-active),
+            ::part(cm-config-group-title-stepped-into) {
+                background-color: var(--section-color);
+                color: white;
+            }
+
+            /* Section title: same fully-rounded pill, uppercase, left-aligned title. */
+            ::part(cm-config-section-title) {
+                position: relative;
+                border: none;
+                background-color: var(--section-inactive-bg);
+                padding: 8px 36px 8px 18px;
+                color: var(--section-inactive-color);
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                border-radius: 999px;
+                justify-content: flex-start;
+            }
+
+            /* Chevrons: keep Font Awesome but bump the size. Both back/forward are
+               absolutely positioned to the pill edges so they don't expand the
+               line box (and thus don't change the pill's height). */
+            ::part(cm-config-group-forward),
+            ::part(cm-config-section-forward) {
+                position: absolute;
+                top: 50%;
+                right: 14px;
+                transform: translateY(-50%);
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                text-shadow: 0 0 0.8px currentColor, 0 0 0.8px currentColor;
+            }
+
+            ::part(cm-config-group-back),
+            ::part(cm-config-section-back) {
+                position: absolute;
+                top: 50%;
+                left: 14px;
+                transform: translateY(-50%);
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                text-shadow: 0 0 0.8px currentColor, 0 0 0.8px currentColor;
+            }
+
+            /* Extra left padding when stepped-into to make room for the back chevron. */
+            ::part(cm-config-group-title-stepped-into),
+            ::part(cm-config-section-title-stepped-into) {
+                padding-left: 36px;
+            }
+
+            @media (hover: hover) {
+                ::part(cm-config-section-title):hover {
+                    background-color: var(--section-color);
+                    color: white;
+                    cursor: pointer;
                 }
+            }
 
-                ::part(cm-icon-container) {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: rgba(0, 140, 153, 0);
-                }
+            ::part(cm-config-section-title-active) {
+                background-color: var(--section-color);
+                color: white;
+            }
 
+            ::part(cm-icons-container),
+            ::part(cm-labels-container) {
+                /* Horizontal padding so the selected icon's outline (offset 2px +
+                   2px stroke = 4px) isn't clipped by the container's overflow. */
+                padding: 10px 6px;
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                scrollbar-gutter: stable;
+                /* Stack rows from the top — wrap-flex would otherwise center them. */
+                align-content: flex-start;
+            }
+
+            /* Config buttons: always-round white circles with a light border. */
+            ::part(cm-icon-container) {
+                border: 1px solid #e6e6e6;
+                border-radius: 50%;
+                background-color: white;
+                box-shadow: none;
+            }
+
+            @media (hover: hover) {
                 ::part(cm-icon-container):hover {
-                    border-width: 1px;
-                    border-style: solid;
-                    border-color: var(--color);
+                    border-color: var(--section-color);
                 }
+            }
 
-                ::part(cm-icon-with-caption) {
-                    gap: 8px;
-                    font-size: 10px;
-                }
+            /* Selected variant — teal ring matching the section title accent.
+               Requires the platform to emit `cm-icon-container-selected` on the
+               selected button (see platform config-button.component.html). */
+            ::part(cm-icon-container-selected) {
+                outline: 2px solid var(--section-color);
+                outline-offset: 2px;
+            }
 
-                ::part(cm-config-menu-icons) {
-                    gap: 10px;
-                }
+            /* Selection is shown by the outline above — hide the platform's
+               built-in check overlay. */
+            ::part(cm-active-variant-check) {
+                display: none;
+            }
+
+            ::part(cm-icon-with-caption) {
+                gap: 8px;
+                font-size: 11px;
+            }
+
+            ::part(cm-caption) {
+                text-align: center;
+                color: #3a3a3a;
+            }
+
+            ::part(cm-caption-selected) {
+                font-weight: 600;
+                color: black;
+            }
+
+            cm-configurator-menu[ui-style="accordion"] {
+                --cm-menu-icon-size: 80px;
+                --cm-menu-max-num-cols: 5;
+            }
+
+            /* Scoped to accordion: mobileTabs uses the same part name but a different layout.
+               The +32px accounts for: 20px outer padding (10px each side) plus 12px
+               horizontal padding on the inner icons-container (6px each side, used to
+               keep the selected icon's outline from being clipped). */
+            cm-configurator-menu[ui-style="accordion"]::part(cm-config-menu-icons) {
+                gap: 18px;
+                padding: 10px;
+                box-sizing: border-box;
+                max-width: calc(
+                    var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 32px +
+                        var(--cm-scrollbar-buffer)
+                );
+            }
+
+            /* Match the outer wrapper's max-width so the inner cap doesn't shrink the
+               row below 5 columns. */
+            ::part(cm-icons-container),
+            ::part(cm-labels-container) {
+                max-width: calc(
+                    var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 12px +
+                        var(--cm-scrollbar-buffer)
+                );
+            }
+
+            /* Spacing between configs within a section (overrides the platform's
+               default 8px gap on .cm-config-section). */
+            ::part(cm-config-section) {
+                gap: 18px;
+            }
+
+            /* Override the platform's default max-width: 75vw. */
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-config-menu-icons) {
+                max-width: 100%;
+            }
+
+            /* Mobile tabs pills: same gray pill look as the accordion side panel.
+               No chevrons here, so center the label and use symmetric padding. */
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-config-group-title) {
+                justify-content: center;
+                padding: 8px 18px;
+            }
+
+            /* Mobile tab menu panel: transparent (a wrapper pill below provides
+               the visible background instead). */
+            .menu:has(cm-configurator-menu[ui-style="mobileTabs"]) {
+                background-color: transparent;
+            }
+
+            /* Wrap the tabs row in a rounded container with the accordion
+               panel's background color, so the pill-row visually sits inside
+               the same surface as the accordion does. */
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-mobile-tabs-groups) {
+                background-color: #eef0f1;
+                border-radius: 999px;
+                padding: 6px;
+            }
+
+            /* Mobile tabs scroll arrows: the platform absolute-positions these
+               (4px from each edge, 24×24, white pill). Stretch them full-height
+               and flush to the edges so the white→transparent fade covers the
+               entire outward side; pin the chevron to the outer edge. */
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-scroll-arrow) {
+                color: var(--section-color);
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                width: 60px;
+                height: 100%;
+                top: 0;
+                transform: none;
+                padding: 0 14px;
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                text-shadow: 0 0 0.8px currentColor, 0 0 0.8px currentColor;
+                z-index: 1;
+            }
+
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-scroll-arrow-left) {
+                left: 0;
+                justify-content: flex-start;
+                background: linear-gradient(to right, white 0%, white 50%, transparent 100%);
+            }
+
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-scroll-arrow-right) {
+                right: 0;
+                justify-content: flex-end;
+                background: linear-gradient(to left, white 0%, white 50%, transparent 100%);
+            }
+
+            cm-configurator-menu[ui-style="mobileTabs"]::part(cm-scroll-arrow):hover {
+                color: var(--section-color);
+            }
+
+            /* Horizontal scroll wrapper for mobileTabs group selectors */
+            ::part(cm-mobile-tabs-groups) {
+                gap: 10px;
+            }
+
+            ::part(cm-scroll-arrow) {
+                background: white;
+                color: #666;
+                border: 1px solid #ccc;
+                box-shadow: none;
+                width: 28px;
+                height: 28px;
+            }
+
+            ::part(cm-scroll-arrow):hover {
+                background: #555;
+                color: white;
+                border-color: #555;
             }
 
             .configurator-container {
                 flex-grow: 1;
                 box-sizing: border-box;
+                min-width: 0;
+                min-height: 0;
+            }
+
+            /* Narrow viewport: menu drops to the bottom */
+            @media (max-width: 900px) {
+                .container {
+                    flex-direction: column;
+                }
+                .menu {
+                    width: 100%;
+                    min-width: 0;
+                    /* Fits tab row + icon row + caption + paddings/gaps. */
+                    height: 155px;
+                    flex-shrink: 0;
+                }
             }
         </style>
     </head>
     <body style="width: 100%; height: 100%; margin: 0">
         <div class="container">
+            <div class="configurator-container">
+                <cm-configurator-main template-uuid="d12dfd86-a8fb-46d9-81ab-5491866ce126" use-external-menu="true"></cm-configurator-main>
+            </div>
             <div class="menu">
                 <!-- Override the default settings for the menu appearance with "accordion"  -->
                 <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
             </div>
-            <div class="configurator-container">
-                <cm-configurator-main template-uuid="d12dfd86-a8fb-46d9-81ab-5491866ce126" use-external-menu="true"></cm-configurator-main>
-            </div>
         </div>
+        <script>
+            // Switch the configurator menu's ui-style based on viewport width.
+            // Wide → accordion side panel. Narrow → mobileTabs strip at the bottom.
+            const menu = document.querySelector("cm-configurator-menu")
+            const mq = window.matchMedia("(max-width: 900px)")
+            const onSizeChange = () => {
+                const next = mq.matches ? "mobileTabs" : "accordion"
+                menu.setAttribute("ui-style", next)
+            }
+            onSizeChange("init")
+            mq.addEventListener("change", onSizeChange)
+            window.addEventListener("resize", onSizeChange)
+        </script>
     </body>
 </html>
