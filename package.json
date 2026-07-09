@@ -1,0 +1,7 @@
+{
+    "name": "colormass-samples",
+    "private": true,
+    "scripts": {
+        "start": "bunx serve -l 8000 ."
+    }
+}
