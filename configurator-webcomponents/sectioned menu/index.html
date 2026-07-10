@@ -1,5 +1,5 @@
 <!doctype html>
-<html style="height: 100%">
+<html>
     <head>
         <link rel="preconnect" href="http://localhost:4300" />
         <!-- Load the colormass configurator styles -->
@@ -29,13 +29,27 @@
                 --section-inactive-color: white;
             }
 
-            .container {
+            /* Container-query anchor: the embed responds to the width the
+               surrounding page actually gives it, not to the viewport. CMS
+               themes cap and pad their content column in steps (e.g. Tailwind
+               contained rows: 640/768/1024/1280/1536px), so viewport-based
+               breakpoints misfire when this example is pasted into one. */
+            .cm-configurator-wrapper {
+                container-type: inline-size;
+                container-name: cm-embed;
+            }
+
+            /* Named cm-* so CMS themes can't restyle it — Tailwind/Bootstrap
+               ship a global `.container` class (stepped max-width, padding,
+               centering) that hijacks that name when embedded.
+               Explicit height: embeds have no html/body height cascade. */
+            .cm-embed {
                 display: flex;
-                height: 100%;
+                height: min(85svh, 900px);
                 overflow: hidden;
             }
 
-            .menu {
+            .cm-menu {
                 justify-content: center;
                 width: 15%;
                 background-color: #eef0f1;
@@ -53,7 +67,7 @@
             /* Opt the host into the height cascade so the inner icons-container
                can have a bounded scroll region. Default platform behavior is
                content-sized; we explicitly fill the menu's height here. */
-            .menu cm-configurator-menu {
+            .cm-menu cm-configurator-menu {
                 display: block;
                 height: 100%;
             }
@@ -158,6 +172,14 @@
                 /* Horizontal padding so the selected icon's outline (offset 2px +
                    2px stroke = 4px) isn't clipped by the container's overflow. */
                 padding: 10px 6px;
+            }
+
+            /* Accordion only: the vertical-scroll setup must not leak into
+               mobileTabs, whose icons row scrolls horizontally with hidden
+               scrollbars — overflow-y: auto there shows a stray vertical
+               scrollbar whenever the row is a few px taller than the menu. */
+            cm-configurator-menu[ui-style="accordion"]::part(cm-icons-container),
+            cm-configurator-menu[ui-style="accordion"]::part(cm-labels-container) {
                 flex: 1;
                 min-height: 0;
                 overflow-y: auto;
@@ -230,8 +252,8 @@
 
             /* Match the outer wrapper's max-width so the inner cap doesn't shrink the
                row below 5 columns. */
-            ::part(cm-icons-container),
-            ::part(cm-labels-container) {
+            cm-configurator-menu[ui-style="accordion"]::part(cm-icons-container),
+            cm-configurator-menu[ui-style="accordion"]::part(cm-labels-container) {
                 max-width: calc(
                     var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 12px +
                         var(--cm-scrollbar-buffer)
@@ -258,7 +280,7 @@
 
             /* Mobile tab menu panel: transparent (a wrapper pill below provides
                the visible background instead). */
-            .menu:has(cm-configurator-menu[ui-style="mobileTabs"]) {
+            .cm-menu:has(cm-configurator-menu[ui-style="mobileTabs"]) {
                 background-color: transparent;
             }
 
@@ -328,50 +350,61 @@
                 border-color: #555;
             }
 
-            .configurator-container {
+            .cm-viewer {
                 flex-grow: 1;
                 box-sizing: border-box;
                 min-width: 0;
                 min-height: 0;
             }
 
-            /* Narrow viewport: menu drops to the bottom */
-            @media (max-width: 900px) {
-                .container {
+            /* Narrow embed (not viewport — see wrapper comment): menu drops to
+               the bottom. Below 950px the 516px side menu would squeeze the
+               viewer too much. */
+            @container cm-embed (max-width: 949px) {
+                .cm-embed {
                     flex-direction: column;
                 }
-                .menu {
+                .cm-menu {
                     width: 100%;
                     min-width: 0;
-                    /* Fits tab row + icon row + caption + paddings/gaps. */
-                    height: 155px;
+                    /* Content-sized: mobileTabs is one tabs row + one icon row,
+                       so its natural height is bounded. A fixed height (155px
+                       previously) overflowed into a scrollbar when font or
+                       scrollbar metrics differed from the ones it was tuned on. */
+                    height: auto;
                     flex-shrink: 0;
+                }
+                /* Undo the accordion's height cascade — content decides here. */
+                .cm-menu cm-configurator-menu {
+                    height: auto;
                 }
             }
         </style>
     </head>
-    <body style="width: 100%; height: 100%; margin: 0">
-        <div class="container">
-            <div class="configurator-container">
-                <cm-configurator-main template-uuid="d12dfd86-a8fb-46d9-81ab-5491866ce126" use-external-menu="true"></cm-configurator-main>
-            </div>
-            <div class="menu">
-                <!-- Override the default settings for the menu appearance with "accordion"  -->
-                <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
+    <body style="width: 100%; margin: 0">
+        <div class="cm-configurator-wrapper">
+            <div class="cm-embed">
+                <div class="cm-viewer">
+                    <cm-configurator-main template-uuid="d12dfd86-a8fb-46d9-81ab-5491866ce126" use-external-menu="true"></cm-configurator-main>
+                </div>
+                <div class="cm-menu">
+                    <!-- Override the default settings for the menu appearance with "accordion"  -->
+                    <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
+                </div>
             </div>
         </div>
         <script>
-            // Switch the configurator menu's ui-style based on viewport width.
+            // Switch the configurator menu's ui-style based on the embed's own
+            // width — must stay in sync with the @container breakpoint above.
             // Wide → accordion side panel. Narrow → mobileTabs strip at the bottom.
             const menu = document.querySelector("cm-configurator-menu")
-            const mq = window.matchMedia("(max-width: 900px)")
-            const onSizeChange = () => {
-                const next = mq.matches ? "mobileTabs" : "accordion"
+            const wrapper = document.querySelector(".cm-configurator-wrapper")
+            const observer = new ResizeObserver((entries) => {
+                const next = entries[0].contentRect.width < 950 ? "mobileTabs" : "accordion"
                 menu.setAttribute("ui-style", next)
-            }
-            onSizeChange("init")
-            mq.addEventListener("change", onSizeChange)
-            window.addEventListener("resize", onSizeChange)
+            })
+            // Fires once on observe, so this also sets the initial state.
+            observer.observe(wrapper)
         </script>
     </body>
 </html>
