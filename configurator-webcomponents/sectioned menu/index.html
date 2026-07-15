@@ -167,6 +167,49 @@
                 padding-left: 36px;
             }
 
+            /* Accordion open/close chevrons (autoClose/manualClose modes; the
+               platform exposes them as cm-config-*-toggle parts, with an -open
+               variant on expanded pills). Client feedback: sideways arrows on
+               both sides — ">" pinned right to expand, "<" pinned left to
+               collapse. The glyph overrides below work because outer ::part
+               declarations beat the shadow-internal Font Awesome content rules. */
+            ::part(cm-config-section-toggle),
+            ::part(cm-config-group-toggle) {
+                position: absolute;
+                top: 50%;
+                right: 14px;
+                transform: translateY(-50%);
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                text-shadow:
+                    0 0 0.8px currentColor,
+                    0 0 0.8px currentColor;
+            }
+
+            ::part(cm-config-section-toggle)::before,
+            ::part(cm-config-group-toggle)::before {
+                content: "\f054"; /* fa-chevron-right */
+            }
+
+            ::part(cm-config-section-toggle-open),
+            ::part(cm-config-group-toggle-open) {
+                right: auto;
+                left: 14px;
+            }
+
+            ::part(cm-config-section-toggle-open)::before,
+            ::part(cm-config-group-toggle-open)::before {
+                content: "\f053"; /* fa-chevron-left */
+            }
+
+            /* Make room for the left chevron on expanded pills (same offset as
+               the stepped-into padding above). */
+            ::part(cm-config-section-title-active),
+            ::part(cm-config-group-title-active) {
+                padding-left: 36px;
+            }
+
             @media (hover: hover) {
                 ::part(cm-config-section-title):hover {
                     background-color: var(--section-color);
@@ -405,7 +448,7 @@
             }
         </style>
     </head>
-    <body style="width: 100%; margin: 0">
+    <body style="width: 100%; height: 100%; margin: 0">
         <div class="cm-configurator-wrapper">
             <div class="cm-embed">
                 <div class="cm-viewer">
