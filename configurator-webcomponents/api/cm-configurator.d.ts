@@ -24,6 +24,12 @@ export interface CMConfiguratorElement extends HTMLElement {
 
     //Also available as html attribute ui-style-override, usable as <cm-configurator-main ui-style-override="accordion"></cm-configurator-main>.
     uiStyleOverride: string
+
+    //Also available as html attribute fullscreen-target, usable as <cm-configurator-main fullscreen-target=".my-wrapper"></cm-configurator-main>.
+    //CSS selector (resolved against the host document) for the element the fullscreen button puts into fullscreen instead of the configurator
+    //itself. Use with use-external-menu to fullscreen a wrapper containing both the viewer and the menu — the styled external menu then stays
+    //visible and the internal menu is not shown in fullscreen.
+    fullscreenTarget: string
 }
 
 export type ParamType = "config" | "material" | "material-article-id" | "template" | "image" | "string" | "boolean" | "number" | "object"

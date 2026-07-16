@@ -1,5 +1,5 @@
 <!doctype html>
-<html style="height: 100%">
+<html>
     <head>
         <link rel="preconnect" href="http://localhost:4300" />
         <!-- Load the colormass configurator styles -->
@@ -14,10 +14,15 @@
             :root {
                 /* Available css variables */
                 --cm-menu-max-num-cols: 8;
-                --cm-menu-icon-size: 50px;
+                --cm-menu-icon-size: 65px;
                 --cm-menu-gap: 10px;
                 /* 16px covers Chrome thin-scrollbar variance across OS themes. */
                 --cm-scrollbar-buffer: 16px;
+                /* Indent for second-level accordion content (an expanded
+                   section's groups and icon rows in autoClose mode). Part of
+                   the accordion width caps below, so the full icon column
+                   count still fits next to it. */
+                --cm-section-indent: 8px;
                 --cm-menu-background-color: rgba(255, 255, 255, 0);
                 --cm-tooltip-font-size: 14px;
                 --cm-tooltip-background-color: gray;
@@ -29,13 +34,50 @@
                 --section-inactive-color: white;
             }
 
-            .container {
+            /* Container-query anchor: the embed responds to the width the
+               surrounding page actually gives it, not to the viewport. CMS
+               themes cap and pad their content column in steps (e.g. Tailwind
+               contained rows: 640/768/1024/1280/1536px), so viewport-based
+               breakpoints misfire when this example is pasted into one. */
+            .cm-configurator-wrapper {
+                container-type: inline-size;
+                container-name: cm-embed;
+            }
+
+            /* Named cm-* so CMS themes can't restyle it — Tailwind/Bootstrap
+               ship a global `.container` class (stepped max-width, padding,
+               centering) that hijacks that name when embedded.
+               Explicit height: embeds have no html/body height cascade. */
+            .cm-embed {
                 display: flex;
-                height: 100%;
+                height: min(85svh, 900px);
                 overflow: hidden;
             }
 
-            .menu {
+            /* Fullscreen (via the viewer's fullscreen button + the
+               fullscreen-target attribute on cm-configurator-main): the whole
+               wrapper is fullscreened, so the embed keeps its styled external
+               menu. Fill the screen instead of the embedded 85svh height and
+               paint the backdrop (the fullscreen backdrop is black by default). */
+            .cm-configurator-wrapper:fullscreen {
+                background: white;
+            }
+
+            .cm-configurator-wrapper:fullscreen .cm-embed {
+                height: 100%;
+            }
+
+            /* Safari < 16.4 uses the prefixed selector; keep as separate rules —
+               an unknown selector in a shared list would invalidate the block. */
+            .cm-configurator-wrapper:-webkit-full-screen {
+                background: white;
+            }
+
+            .cm-configurator-wrapper:-webkit-full-screen .cm-embed {
+                height: 100%;
+            }
+
+            .cm-menu {
                 justify-content: center;
                 width: 15%;
                 background-color: #eef0f1;
@@ -44,16 +86,21 @@
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
-                /* Fits 5 × 80px icons + 4 × 10px gap + 20px outer padding +
-                   12px inner icons-container padding (for the selected outline) +
-                   8px section indent + 16px scrollbar buffer. */
-                min-width: 516px;
+                /* Fits the accordion width cap (496px = 5 × 80px icons +
+                   4 × 10px gap + 20px outer padding + 12px icons-container
+                   padding + 8px section indent + 16px scrollbar buffer) plus
+                   the platform menu's 16px internal padding and its whole-menu
+                   scrollbar (appears in autoClose mode once enough groups are
+                   expanded, ~17px). With this headroom the cap stays the
+                   binding constraint, so icon rows never rewrap when that
+                   scrollbar comes and goes. */
+                min-width: 540px;
             }
 
             /* Opt the host into the height cascade so the inner icons-container
                can have a bounded scroll region. Default platform behavior is
                content-sized; we explicitly fill the menu's height here. */
-            .menu cm-configurator-menu {
+            .cm-menu cm-configurator-menu {
                 display: block;
                 height: 100%;
             }
@@ -75,7 +122,6 @@
                 border-radius: 999px;
                 justify-content: flex-start;
             }
-
 
             /* Avoid sticky :hover after a tap on touch devices. */
             @media (hover: hover) {
@@ -119,7 +165,9 @@
                 font-size: 14px;
                 font-weight: 900;
                 line-height: 1;
-                text-shadow: 0 0 0.8px currentColor, 0 0 0.8px currentColor;
+                text-shadow:
+                    0 0 0.8px currentColor,
+                    0 0 0.8px currentColor;
             }
 
             ::part(cm-config-group-back),
@@ -131,12 +179,57 @@
                 font-size: 14px;
                 font-weight: 900;
                 line-height: 1;
-                text-shadow: 0 0 0.8px currentColor, 0 0 0.8px currentColor;
+                text-shadow:
+                    0 0 0.8px currentColor,
+                    0 0 0.8px currentColor;
             }
 
             /* Extra left padding when stepped-into to make room for the back chevron. */
             ::part(cm-config-group-title-stepped-into),
             ::part(cm-config-section-title-stepped-into) {
+                padding-left: 36px;
+            }
+
+            /* Accordion open/close chevrons (autoClose/manualClose modes; the
+               platform exposes them as cm-config-*-toggle parts, with an -open
+               variant on expanded pills). Client feedback: sideways arrows on
+               both sides — ">" pinned right to expand, "<" pinned left to
+               collapse. The glyph overrides below work because outer ::part
+               declarations beat the shadow-internal Font Awesome content rules. */
+            ::part(cm-config-section-toggle),
+            ::part(cm-config-group-toggle) {
+                position: absolute;
+                top: 50%;
+                right: 14px;
+                transform: translateY(-50%);
+                font-size: 14px;
+                font-weight: 900;
+                line-height: 1;
+                text-shadow:
+                    0 0 0.8px currentColor,
+                    0 0 0.8px currentColor;
+            }
+
+            ::part(cm-config-section-toggle)::before,
+            ::part(cm-config-group-toggle)::before {
+                content: "\f054"; /* fa-chevron-right */
+            }
+
+            ::part(cm-config-section-toggle-open),
+            ::part(cm-config-group-toggle-open) {
+                right: auto;
+                left: 14px;
+            }
+
+            ::part(cm-config-section-toggle-open)::before,
+            ::part(cm-config-group-toggle-open)::before {
+                content: "\f053"; /* fa-chevron-left */
+            }
+
+            /* Make room for the left chevron on expanded pills (same offset as
+               the stepped-into padding above). */
+            ::part(cm-config-section-title-active),
+            ::part(cm-config-group-title-active) {
                 padding-left: 36px;
             }
 
@@ -158,6 +251,18 @@
                 /* Horizontal padding so the selected icon's outline (offset 2px +
                    2px stroke = 4px) isn't clipped by the container's overflow. */
                 padding: 10px 6px;
+            }
+
+            /* stepInto accordion only: there the icons-container is the menu's
+               scroll region, so it needs the bounded-height/own-scrollbar setup.
+               It must not leak into the other modes: in autoClose the platform
+               scrolls the whole menu instead (an icons-container gutter would
+               waste ~15px per row), and in mobileTabs the icons row scrolls
+               horizontally with hidden scrollbars — overflow-y: auto there
+               shows a stray vertical scrollbar whenever the row is a few px
+               taller than the menu. */
+            cm-configurator-menu[ui-style="accordion"][accordion-style="stepInto"]::part(cm-icons-container),
+            cm-configurator-menu[ui-style="accordion"][accordion-style="stepInto"]::part(cm-labels-container) {
                 flex: 1;
                 min-height: 0;
                 overflow-y: auto;
@@ -217,21 +322,23 @@
             /* Scoped to accordion: mobileTabs uses the same part name but a different layout.
                The +32px accounts for: 20px outer padding (10px each side) plus 12px
                horizontal padding on the inner icons-container (6px each side, used to
-               keep the selected icon's outline from being clipped). */
+               keep the selected icon's outline from being clipped). The section
+               indent is added so an indented (second-level) icons row still fits
+               the full column count. */
             cm-configurator-menu[ui-style="accordion"]::part(cm-config-menu-icons) {
                 gap: 18px;
                 padding: 10px;
                 box-sizing: border-box;
                 max-width: calc(
                     var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 32px +
-                        var(--cm-scrollbar-buffer)
+                        var(--cm-scrollbar-buffer) + var(--cm-section-indent)
                 );
             }
 
             /* Match the outer wrapper's max-width so the inner cap doesn't shrink the
                row below 5 columns. */
-            ::part(cm-icons-container),
-            ::part(cm-labels-container) {
+            cm-configurator-menu[ui-style="accordion"]::part(cm-icons-container),
+            cm-configurator-menu[ui-style="accordion"]::part(cm-labels-container) {
                 max-width: calc(
                     var(--cm-menu-max-num-cols) * var(--cm-menu-icon-size) + (var(--cm-menu-max-num-cols) - 1) * var(--cm-menu-gap) + 12px +
                         var(--cm-scrollbar-buffer)
@@ -239,9 +346,12 @@
             }
 
             /* Spacing between configs within a section (overrides the platform's
-               default 8px gap on .cm-config-section). */
+               default 8px gap on .cm-config-section). The explicit indent keeps
+               second-level content visually nested under its section pill in
+               autoClose mode — set via var so the width caps can account for it. */
             ::part(cm-config-section) {
                 gap: 18px;
+                padding-left: var(--cm-section-indent);
             }
 
             /* Override the platform's default max-width: 75vw. */
@@ -258,7 +368,7 @@
 
             /* Mobile tab menu panel: transparent (a wrapper pill below provides
                the visible background instead). */
-            .menu:has(cm-configurator-menu[ui-style="mobileTabs"]) {
+            .cm-menu:has(cm-configurator-menu[ui-style="mobileTabs"]) {
                 background-color: transparent;
             }
 
@@ -288,7 +398,9 @@
                 font-size: 14px;
                 font-weight: 900;
                 line-height: 1;
-                text-shadow: 0 0 0.8px currentColor, 0 0 0.8px currentColor;
+                text-shadow:
+                    0 0 0.8px currentColor,
+                    0 0 0.8px currentColor;
                 z-index: 1;
             }
 
@@ -328,50 +440,69 @@
                 border-color: #555;
             }
 
-            .configurator-container {
+            .cm-viewer {
                 flex-grow: 1;
                 box-sizing: border-box;
                 min-width: 0;
                 min-height: 0;
             }
 
-            /* Narrow viewport: menu drops to the bottom */
-            @media (max-width: 900px) {
-                .container {
+            /* Narrow embed (not viewport — see wrapper comment): menu drops to
+               the bottom. Below 950px the 516px side menu would squeeze the
+               viewer too much. */
+            @container cm-embed (max-width: 949px) {
+                .cm-embed {
                     flex-direction: column;
                 }
-                .menu {
+                .cm-menu {
                     width: 100%;
                     min-width: 0;
-                    /* Fits tab row + icon row + caption + paddings/gaps. */
-                    height: 155px;
+                    /* Content-sized: mobileTabs is one tabs row + one icon row,
+                       so its natural height is bounded. A fixed height (155px
+                       previously) overflowed into a scrollbar when font or
+                       scrollbar metrics differed from the ones it was tuned on. */
+                    height: auto;
                     flex-shrink: 0;
+                }
+                /* Undo the accordion's height cascade — content decides here. */
+                .cm-menu cm-configurator-menu {
+                    height: auto;
                 }
             }
         </style>
     </head>
     <body style="width: 100%; height: 100%; margin: 0">
-        <div class="container">
-            <div class="configurator-container">
-                <cm-configurator-main template-uuid="d12dfd86-a8fb-46d9-81ab-5491866ce126" use-external-menu="true"></cm-configurator-main>
-            </div>
-            <div class="menu">
-                <!-- Override the default settings for the menu appearance with "accordion"  -->
-                <cm-configurator-menu ui-style="accordion" accordion-style="stepInto" use-captions="true" style="width: 100%"></cm-configurator-menu>
+        <div class="cm-configurator-wrapper">
+            <div class="cm-embed">
+                <div class="cm-viewer">
+                    <!-- fullscreen-target: the fullscreen button fullscreens the whole
+                         wrapper (viewer + external menu) so the menu keeps this page's
+                         styling; without it the platform would fullscreen only the
+                         viewer and fall back to its unstyled internal menu. -->
+                    <cm-configurator-main
+                        template-uuid="33dc5c71-1c0e-4e36-94b9-0bfeae9ddd50"
+                        use-external-menu="true"
+                        fullscreen-target=".cm-configurator-wrapper"
+                    ></cm-configurator-main>
+                </div>
+                <div class="cm-menu">
+                    <!-- Override the default settings for the menu appearance with "accordion"  -->
+                    <cm-configurator-menu ui-style="accordion" accordion-style="autoClose" use-captions="true" style="width: 100%"></cm-configurator-menu>
+                </div>
             </div>
         </div>
         <script>
-            // Switch the configurator menu's ui-style based on viewport width.
+            // Switch the configurator menu's ui-style based on the embed's own
+            // width — must stay in sync with the @container breakpoint above.
             // Wide → accordion side panel. Narrow → mobileTabs strip at the bottom.
             const menu = document.querySelector("cm-configurator-menu")
-            const mq = window.matchMedia("(max-width: 900px)")
-            const onSizeChange = () => {
-                const next = mq.matches ? "mobileTabs" : "accordion"
+            const wrapper = document.querySelector(".cm-configurator-wrapper")
+            const observer = new ResizeObserver((entries) => {
+                const next = entries[0].contentRect.width < 950 ? "mobileTabs" : "accordion"
                 menu.setAttribute("ui-style", next)
-            }
-            onSizeChange("init")
-            mq.addEventListener("change", onSizeChange)
-            window.addEventListener("resize", onSizeChange)
+            })
+            // Fires once on observe, so this also sets the initial state.
+            observer.observe(wrapper)
         </script>
     </body>
 </html>
