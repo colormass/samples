@@ -1,11 +1,11 @@
 <!doctype html>
 <html>
     <head>
-        <link rel="preconnect" href="https://configurator.colormass.com" />
+        <link rel="preconnect" href="http://localhost:4300" />
         <!-- Load the colormass configurator styles -->
-        <link href="https://configurator.colormass.com/styles.css" rel="stylesheet" />
+        <link href="http://localhost:4300/styles.css" rel="stylesheet" />
         <!-- Load the colormass configurator web components -->
-        <script src="https://configurator.colormass.com/cm-configurator.js" type="module"></script>
+        <script src="http://localhost:4300/cm-configurator.js" type="module"></script>
 
         <title>Configurator Web Component Example</title>
         <meta charset="UTF-8" />
@@ -52,6 +52,29 @@
                 display: flex;
                 height: min(85svh, 900px);
                 overflow: hidden;
+            }
+
+            /* Fullscreen (via the viewer's fullscreen button + the
+               fullscreen-target attribute on cm-configurator-main): the whole
+               wrapper is fullscreened, so the embed keeps its styled external
+               menu. Fill the screen instead of the embedded 85svh height and
+               paint the backdrop (the fullscreen backdrop is black by default). */
+            .cm-configurator-wrapper:fullscreen {
+                background: white;
+            }
+
+            .cm-configurator-wrapper:fullscreen .cm-embed {
+                height: 100%;
+            }
+
+            /* Safari < 16.4 uses the prefixed selector; keep as separate rules —
+               an unknown selector in a shared list would invalidate the block. */
+            .cm-configurator-wrapper:-webkit-full-screen {
+                background: white;
+            }
+
+            .cm-configurator-wrapper:-webkit-full-screen .cm-embed {
+                height: 100%;
             }
 
             .cm-menu {
@@ -452,7 +475,15 @@
         <div class="cm-configurator-wrapper">
             <div class="cm-embed">
                 <div class="cm-viewer">
-                    <cm-configurator-main template-uuid="33dc5c71-1c0e-4e36-94b9-0bfeae9ddd50" use-external-menu="true"></cm-configurator-main>
+                    <!-- fullscreen-target: the fullscreen button fullscreens the whole
+                         wrapper (viewer + external menu) so the menu keeps this page's
+                         styling; without it the platform would fullscreen only the
+                         viewer and fall back to its unstyled internal menu. -->
+                    <cm-configurator-main
+                        template-uuid="33dc5c71-1c0e-4e36-94b9-0bfeae9ddd50"
+                        use-external-menu="true"
+                        fullscreen-target=".cm-configurator-wrapper"
+                    ></cm-configurator-main>
                 </div>
                 <div class="cm-menu">
                     <!-- Override the default settings for the menu appearance with "accordion"  -->
