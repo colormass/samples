@@ -23,7 +23,11 @@ export interface CMConfiguratorElement extends HTMLElement {
     addEventListener(type: "configurationLoaded", listener: (this: this, ev: Event) => void): void
     addEventListener(type: "changeCompleted", listener: (this: this, ev: CustomEvent<{id: string; value: string; type: string}>) => void): void
     addEventListener(type: "arUrl", listener: (this: this, ev: CustomEvent<string>) => void): void
-    /** Fires at most once per frame while the camera moves, and once right after loadingCompleted. */
+    /**
+     * Fires at most once per frame while the camera moves, and once right after loadingCompleted.
+     * Add this listener in the customElements.whenDefined("cm-configurator-main").then(...) callback.
+     * A listener added before the element is defined gets no cameraChanged events.
+     */
     addEventListener(type: "cameraChanged", listener: (this: this, ev: CustomEvent<CameraState>) => void): void
 
     //Also available as html attribute template-uuid, usable as <cm-configurator-main template-uuid="123"></cm-configurator-main> to load a scene on startup.
